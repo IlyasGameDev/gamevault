@@ -6,6 +6,7 @@ import GamePlayer from '@/components/games/GamePlayer';
 import GameInfo from '@/components/games/GameInfo';
 import GameRating from '@/components/games/GameRating';
 import GameComments from '@/components/games/GameComments';
+import GameActions from '@/components/games/GameActions';
 import GameGrid from '@/components/games/GameGrid';
 import { SITE_NAME } from '@/lib/constants';
 
@@ -66,8 +67,26 @@ export default async function GamePage({ params }: Props) {
 
   const related = await getRelated(game);
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'VideoGame',
+    name: game.title,
+    description: game.description ?? undefined,
+    image: game.thumbnail_url ?? undefined,
+    author: game.developer ? { '@type': 'Organization', name: game.developer } : undefined,
+    genre: game.categories.map((c) => c.name),
+    aggregateRating: game.rating_count > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: game.rating_avg,
+      ratingCount: game.rating_count,
+      bestRating: 5,
+      worstRating: 1,
+    } : undefined,
+  };
+
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* Player */}
       <div className="max-w-4xl mx-auto">
         <GamePlayer game={game} />
@@ -77,6 +96,7 @@ export default async function GamePage({ params }: Props) {
       <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           <GameInfo game={game} />
+          <GameActions game={game} />
           <div>
             <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Rate this game</h3>
             <GameRating game={game} />

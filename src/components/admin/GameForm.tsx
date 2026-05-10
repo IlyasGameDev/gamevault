@@ -6,7 +6,9 @@ import { Category, GameFormData, GameWithCategories } from '@/lib/types/database
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import FileUploader from './FileUploader';
+import Modal from '@/components/ui/Modal';
 import toast from 'react-hot-toast';
+import { ExternalLink, Eye } from 'lucide-react';
 
 interface GameFormProps {
   game?: GameWithCategories;
@@ -48,6 +50,7 @@ export default function GameForm({ game, categories }: GameFormProps) {
   );
   const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const isEdit = !!game;
 
   function set(key: keyof GameFormData, value: unknown) {
@@ -148,10 +151,24 @@ export default function GameForm({ game, categories }: GameFormProps) {
           ))}
         </div>
         {form.game_type === 'iframe' ? (
-          <Input
-            label="Source URL *" type="url" placeholder="https://example.com/game"
-            value={form.iframe_url} onChange={(e) => set('iframe_url', e.target.value)}
-          />
+          <div className="space-y-2">
+            <Input
+              label="Source URL *" type="url" placeholder="https://example.com/game"
+              value={form.iframe_url} onChange={(e) => set('iframe_url', e.target.value)}
+            />
+            {form.iframe_url && (
+              <div className="flex gap-2">
+                <Button type="button" variant="secondary" size="sm" onClick={() => setPreviewOpen(true)}>
+                  <Eye size={14} /> Preview in modal
+                </Button>
+                <a href={form.iframe_url} target="_blank" rel="noopener noreferrer">
+                  <Button type="button" variant="ghost" size="sm">
+                    <ExternalLink size={14} /> Open in tab
+                  </Button>
+                </a>
+              </div>
+            )}
+          </div>
         ) : (
           <FileUploader slug={form.slug} type="game" accept=".zip,.html" label="Game Files (ZIP or HTML)" onUploaded={(url) => set('game_file_path', url)} />
         )}
@@ -267,6 +284,21 @@ export default function GameForm({ game, categories }: GameFormProps) {
           Cancel
         </Button>
       </div>
+
+      {/* iframe preview modal */}
+      <Modal open={previewOpen} onClose={() => setPreviewOpen(false)} title="Game Preview" size="xl">
+        <div className="w-full aspect-video rounded-lg overflow-hidden bg-black">
+          {form.iframe_url && (
+            <iframe
+              src={form.iframe_url}
+              className="w-full h-full border-0"
+              allow="fullscreen; autoplay; gamepad"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+              title="Game Preview"
+            />
+          )}
+        </div>
+      </Modal>
     </form>
   );
 }

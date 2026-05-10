@@ -5,10 +5,16 @@ import { useAuth } from '@/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
 import { GameWithCategories } from '@/lib/types/database';
 import GameGrid from '@/components/games/GameGrid';
+import GameCard from '@/components/games/GameCard';
 import { formatDate } from '@/lib/utils';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import { Star } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+interface RatedGame extends GameWithCategories {
+  userScore: number;
+}
 
 type Tab = 'favorites' | 'history' | 'ratings';
 
@@ -18,6 +24,7 @@ export default function ProfilePage() {
   const supabase = createClient();
   const [tab, setTab] = useState<Tab>('favorites');
   const [games, setGames] = useState<GameWithCategories[]>([]);
+  const [ratedGames, setRatedGames] = useState<RatedGame[]>([]);
   const [gamesLoading, setGamesLoading] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [saving, setSaving] = useState(false);
@@ -55,6 +62,16 @@ export default function ProfilePage() {
           const g = d.game as Record<string, unknown>;
           return g ? { ...g, categories: ((g.categories as { category: unknown }[]) ?? []).map((gc) => gc.category) } : null;
         }).filter(Boolean)) as GameWithCategories[]);
+      } else if (tab === 'ratings') {
+        const { data } = await supabase
+          .from('ratings')
+          .select('score, game:games(*, categories:game_categories(category:categories(*)))')
+          .eq('user_id', user!.id)
+          .order('updated_at', { ascending: false });
+        setRatedGames(((data ?? []).map((d: Record<string, unknown>) => {
+          const g = d.game as Record<string, unknown>;
+          return g ? { ...g, categories: ((g.categories as { category: unknown }[]) ?? []).map((gc) => gc.category), userScore: d.score } : null;
+        }).filter(Boolean)) as RatedGame[]);
       }
       setGamesLoading(false);
     }
@@ -124,7 +141,33 @@ export default function ProfilePage() {
         ))}
       </div>
 
-      <GameGrid games={games} loading={gamesLoading} />
+      {tab === 'ratings' ? (
+        gamesLoading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="animate-pulse bg-[#1a1d2e] rounded-xl aspect-video" />
+            ))}
+          </div>
+        ) : ratedGames.length === 0 ? (
+          <div className="text-center py-16 text-gray-500">
+            <Star size={36} className="mx-auto mb-3 opacity-30" />
+            <p>You haven't rated any games yet</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {ratedGames.map((game) => (
+              <div key={game.id} className="relative">
+                <GameCard game={game} />
+                <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 bg-black/70 backdrop-blur-sm rounded-full text-xs text-yellow-400 font-semibold">
+                  <Star size={10} fill="currentColor" /> {game.userScore}/5
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      ) : (
+        <GameGrid games={games} loading={gamesLoading} />
+      )}
     </main>
   );
 }

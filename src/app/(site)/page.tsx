@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import FeaturedCarousel from '@/components/games/FeaturedCarousel';
 import GameGrid from '@/components/games/GameGrid';
+import AllGamesSection from '@/components/games/AllGamesSection';
 import { GameWithCategories, Category } from '@/lib/types/database';
 import { ChevronRight } from 'lucide-react';
 
@@ -90,6 +91,11 @@ export default async function HomePage() {
           <GameGrid games={topRated} />
         </section>
       )}
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-bold text-white">🎮 All Games</h2>
+        <AllGamesSection />
+      </section>
     </main>
   );
 }
