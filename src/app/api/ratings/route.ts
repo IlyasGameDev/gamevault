@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ratingSchema } from '@/lib/validations';
+import { rateLimit } from '@/lib/rateLimit';
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    // 20 ratings per minute per user
+    const { allowed } = rateLimit(`rating:${user.id}`, { limit: 20, windowMs: 60_000 });
+    if (!allowed) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
 
     const body = await request.json();
     const parsed = ratingSchema.safeParse(body);

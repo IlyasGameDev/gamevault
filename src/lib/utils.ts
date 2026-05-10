@@ -27,3 +27,12 @@ export function getGameUrl(
 ): string {
   return `${supabaseUrl}/storage/v1/object/public/games/${gamePath}/${entryFile}`;
 }
+
+// Strip HTML tags and dangerous characters from user-submitted text
+export function sanitize(input: string): string {
+  return input
+    .replace(/<[^>]*>/g, '')           // strip HTML tags
+    .replace(/javascript:/gi, '')       // strip JS protocol
+    .replace(/on\w+\s*=/gi, '')        // strip event handlers
+    .trim();
+}

@@ -1,6 +1,7 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
 import { GameWithCategories } from '@/lib/types/database';
@@ -9,7 +10,7 @@ import GameCard from '@/components/games/GameCard';
 import { formatDate } from '@/lib/utils';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-import { Star } from 'lucide-react';
+import { Star, Camera } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface RatedGame extends GameWithCategories {
@@ -22,19 +23,26 @@ export default function ProfilePage() {
   const { user, profile, loading } = useAuth();
   const router = useRouter();
   const supabase = createClient();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
   const [tab, setTab] = useState<Tab>('favorites');
   const [games, setGames] = useState<GameWithCategories[]>([]);
   const [ratedGames, setRatedGames] = useState<RatedGame[]>([]);
   const [gamesLoading, setGamesLoading] = useState(false);
   const [displayName, setDisplayName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
   const [saving, setSaving] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.push('/login');
   }, [user, loading]);
 
   useEffect(() => {
-    if (profile) setDisplayName(profile.display_name ?? profile.username ?? '');
+    if (profile) {
+      setDisplayName(profile.display_name ?? profile.username ?? '');
+      setAvatarUrl(profile.avatar_url ?? '');
+    }
   }, [profile]);
 
   useEffect(() => {
@@ -78,17 +86,65 @@ export default function ProfilePage() {
     load();
   }, [tab, user]);
 
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Avatar must be under 2MB');
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      toast.error('File must be an image');
+      return;
+    }
+
+    setAvatarUploading(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `avatars/${user.id}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('games')
+        .upload(path, file, { upsert: true, contentType: file.type });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from('games').getPublicUrl(path);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      toast.success('Avatar updated!');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to upload avatar');
+    } finally {
+      setAvatarUploading(false);
+    }
+  }
+
   async function saveProfile() {
     if (!user) return;
     setSaving(true);
-    const { error } = await supabase.from('profiles').update({ display_name: displayName }).eq('id', user.id);
+    const { error } = await supabase
+      .from('profiles')
+      .update({ display_name: displayName.trim() })
+      .eq('id', user.id);
     if (error) toast.error('Failed to save');
     else toast.success('Profile updated!');
     setSaving(false);
   }
 
-  if (loading) return <div className="min-h-screen bg-[#0f1117] flex items-center justify-center text-gray-500">Loading...</div>;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center text-gray-500">Loading...</div>
+  );
   if (!user || !profile) return null;
+
+  const initials = (profile.display_name ?? profile.username ?? 'U')[0].toUpperCase();
 
   const TABS: { id: Tab; label: string }[] = [
     { id: 'favorites', label: 'Favorites' },
@@ -100,9 +156,42 @@ export default function ProfilePage() {
     <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-8">
       {/* Profile header */}
       <div className="flex items-start gap-6">
-        <div className="w-20 h-20 rounded-2xl bg-indigo-600 flex items-center justify-center text-3xl font-bold text-white shrink-0">
-          {(profile.display_name ?? profile.username ?? 'U')[0].toUpperCase()}
+        {/* Avatar with upload overlay */}
+        <div className="relative shrink-0 group">
+          <div className="w-20 h-20 rounded-2xl overflow-hidden bg-indigo-600 flex items-center justify-center text-3xl font-bold text-white">
+            {avatarUrl ? (
+              <Image
+                src={avatarUrl}
+                alt="Avatar"
+                width={80}
+                height={80}
+                className="object-cover w-full h-full"
+              />
+            ) : (
+              initials
+            )}
+          </div>
+          <button
+            onClick={() => avatarInputRef.current?.click()}
+            disabled={avatarUploading}
+            className="absolute inset-0 rounded-2xl bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+            title="Change avatar"
+          >
+            {avatarUploading ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Camera size={20} className="text-white" />
+            )}
+          </button>
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarChange}
+          />
         </div>
+
         <div className="space-y-1">
           <h1 className="text-2xl font-bold text-white">{profile.display_name ?? profile.username}</h1>
           <p className="text-gray-500 text-sm">@{profile.username}</p>
@@ -122,6 +211,7 @@ export default function ProfilePage() {
           />
           <Button onClick={saveProfile} loading={saving} variant="secondary">Save</Button>
         </div>
+        <p className="text-xs text-gray-600">Click your avatar above to change it (max 2MB, images only)</p>
       </div>
 
       {/* Tabs */}
@@ -151,7 +241,7 @@ export default function ProfilePage() {
         ) : ratedGames.length === 0 ? (
           <div className="text-center py-16 text-gray-500">
             <Star size={36} className="mx-auto mb-3 opacity-30" />
-            <p>You haven't rated any games yet</p>
+            <p>You haven&apos;t rated any games yet</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">

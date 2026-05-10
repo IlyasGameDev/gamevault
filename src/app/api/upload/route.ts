@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { MAX_UPLOAD_SIZE_MB } from '@/lib/constants';
 import AdmZip from 'adm-zip';
+import { rateLimit } from '@/lib/rateLimit';
 
 async function isAdmin(request: NextRequest): Promise<boolean> {
   const supabase = await createServerSupabaseClient();
@@ -26,6 +27,12 @@ export async function POST(request: NextRequest) {
     if (!file || !gameSlug) {
       return NextResponse.json({ error: 'file and slug are required' }, { status: 400 });
     }
+
+    // 10 uploads per 10 minutes per admin
+    const supabase2 = await createServerSupabaseClient();
+    const { data: { user: uploader } } = await supabase2.auth.getUser();
+    const { allowed } = rateLimit(`upload:${uploader?.id}`, { limit: 10, windowMs: 10 * 60_000 });
+    if (!allowed) return NextResponse.json({ error: 'Upload rate limit exceeded' }, { status: 429 });
 
     const maxBytes = MAX_UPLOAD_SIZE_MB * 1024 * 1024;
     if (file.size > maxBytes) {

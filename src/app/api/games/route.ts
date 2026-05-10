@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase/admin';
 import { gameSchema } from '@/lib/validations';
 import slugify from 'slugify';
 import { GAMES_PER_PAGE } from '@/lib/constants';
+import { sanitize } from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -68,6 +69,9 @@ export async function POST(request: NextRequest) {
       .from('games')
       .insert({
         ...gameData,
+        title: sanitize(gameData.title),
+        description: gameData.description ? sanitize(gameData.description) : gameData.description,
+        instructions: gameData.instructions ? sanitize(gameData.instructions) : gameData.instructions,
         slug,
         published_at: gameData.status === 'published' ? new Date().toISOString() : null,
       })

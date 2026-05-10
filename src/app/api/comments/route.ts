@@ -3,6 +3,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { commentSchema } from '@/lib/validations';
 import { COMMENTS_PER_PAGE } from '@/lib/constants';
+import { sanitize } from '@/lib/utils';
+import { rateLimit } from '@/lib/rateLimit';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -33,13 +35,17 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    // 5 comments per minute per user
+    const { allowed } = rateLimit(`comment:${user.id}`, { limit: 5, windowMs: 60_000 });
+    if (!allowed) return NextResponse.json({ error: 'Too many comments — slow down!' }, { status: 429 });
+
     const body = await request.json();
     const parsed = commentSchema.safeParse(body);
     if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? parsed.error.message }, { status: 400 });
 
     const { data, error } = await supabase
       .from('comments')
-      .insert({ ...parsed.data, user_id: user.id })
+      .insert({ ...parsed.data, content: sanitize(parsed.data.content), user_id: user.id })
       .select('*, profiles(username, display_name, avatar_url)')
       .single();
 
