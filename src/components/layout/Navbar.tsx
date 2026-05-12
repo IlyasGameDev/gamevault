@@ -2,10 +2,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, Gamepad2, User, LogOut, Settings, Shield, Menu, X } from 'lucide-react';
+import { Search, Bell, Menu, X, LogOut, User, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useDebounce } from '@/hooks/useDebounce';
-import { SITE_NAME } from '@/lib/constants';
 import toast from 'react-hot-toast';
 
 const CATEGORIES = [
@@ -23,16 +21,14 @@ export default function Navbar() {
   const { user, profile, signOut, isAdmin } = useAuth();
   const router = useRouter();
   const [search, setSearch] = useState('');
-  const [showSearch, setShowSearch] = useState(false);
-  const [showCats, setShowCats] = useState(false);
-  const [showUser, setShowUser] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showUser, setShowUser] = useState(false);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     if (search.trim()) {
       router.push(`/search?q=${encodeURIComponent(search.trim())}`);
-      setShowSearch(false);
+      setMobileOpen(false);
     }
   }
 
@@ -42,151 +38,147 @@ export default function Navbar() {
     router.push('/');
   }
 
+  const initial = (profile?.display_name ?? profile?.username ?? user?.email ?? 'U')[0].toUpperCase();
+
   return (
-    <nav className="sticky top-0 z-40 border-b border-white/10 bg-[#0f1117]/90 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-4">
+    <header className="sticky top-0 z-40 bg-[#FFF8E6]/95 backdrop-blur-md border-b-[3px] border-[#0E1547]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
+        {/* Mobile menu */}
+        <button
+          className="md:hidden w-11 h-11 grid place-items-center bg-white border-[3px] border-[#0E1547] rounded-xl shadow-chunk-sm"
+          onClick={() => setMobileOpen((v) => !v)}
+          aria-label="Menu"
+        >
+          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl text-white shrink-0">
-          <Gamepad2 className="text-indigo-500" size={24} />
-          <span className="hidden sm:block">{SITE_NAME}</span>
+        <Link href="/" className="flex items-center gap-2 shrink-0">
+          <div className="relative w-10 h-10 rounded-xl bg-[#6BD4F0] border-[3px] border-[#0E1547] grid place-items-center shadow-chunk-sm">
+            <span className="font-extrabold text-[#0E1547] text-sm tracking-tighter">GV</span>
+          </div>
+          <div className="hidden sm:flex items-baseline font-extrabold text-xl text-[#0E1547] leading-none">
+            <span>gamevault</span>
+            <span className="text-[#FF5E9A]">.gg</span>
+          </div>
         </Link>
 
         {/* Desktop search */}
-        <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-4">
+        <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-2">
           <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0E1547]" size={18} />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search games..."
-              className="w-full pl-9 pr-4 py-2 bg-[#1a1d2e] border border-white/10 rounded-lg text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
+              placeholder="search 2,400 games..."
+              className="w-full pl-11 pr-4 py-2.5 bg-white border-[3px] border-[#0E1547] rounded-xl text-sm font-medium text-[#0E1547] placeholder:text-[#0E1547]/50 focus:outline-none focus:shadow-chunk-sm transition-shadow"
             />
           </div>
         </form>
 
-        {/* Categories dropdown */}
-        <div className="hidden md:block relative">
-          <button
-            onMouseEnter={() => setShowCats(true)}
-            onMouseLeave={() => setShowCats(false)}
-            className="text-sm text-gray-400 hover:text-white transition-colors px-2 py-1"
-          >
-            Browse ▾
-          </button>
-          {showCats && (
-            <div
-              onMouseEnter={() => setShowCats(true)}
-              onMouseLeave={() => setShowCats(false)}
-              className="absolute top-full left-0 mt-1 w-64 bg-[#1a1d2e] border border-white/10 rounded-xl shadow-2xl grid grid-cols-2 gap-1 p-2 z-50"
-            >
-              {CATEGORIES.map((cat) => (
-                <Link
-                  key={cat.slug}
-                  href={`/categories/${cat.slug}`}
-                  onClick={() => setShowCats(false)}
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-                >
-                  <span>{cat.icon}</span>{cat.name}
-                </Link>
-              ))}
-              <Link
-                href="/categories"
-                onClick={() => setShowCats(false)}
-                className="col-span-2 text-center px-3 py-2 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
-              >
-                All categories →
-              </Link>
-            </div>
-          )}
+        <div className="flex-1 md:hidden" />
+
+        {/* Coin balance pill (only when logged in - decorative) */}
+        <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-[#FCD635] border-[3px] border-[#0E1547] rounded-xl shadow-chunk-sm">
+          <span className="w-5 h-5 rounded-full bg-[#0E1547] text-[#FCD635] grid place-items-center text-[10px] font-extrabold">$</span>
+          <span className="font-extrabold text-[#0E1547] text-sm">51,500</span>
         </div>
 
-        <div className="flex-1" />
+        {/* Bell */}
+        <button className="hidden sm:grid w-11 h-11 place-items-center bg-[#FF5E9A] border-[3px] border-[#0E1547] rounded-xl shadow-chunk-sm relative" aria-label="Notifications">
+          <Bell size={18} className="text-white" strokeWidth={2.5} />
+          <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-[#0E1547] border-2 border-[#FFF8E6]" />
+        </button>
 
         {/* Auth */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="flex items-center gap-2">
           {user ? (
             <div className="relative">
               <button
                 onClick={() => setShowUser((v) => !v)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1a1d2e] border border-white/10 text-sm text-gray-300 hover:text-white transition-colors"
+                className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 bg-white border-[3px] border-[#0E1547] rounded-xl shadow-chunk-sm"
               >
-                <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white">
-                  {(profile?.display_name ?? profile?.username ?? 'U')[0].toUpperCase()}
+                <div className="w-7 h-7 rounded-lg bg-[#6BD4F0] border-2 border-[#0E1547] grid place-items-center text-xs font-extrabold text-[#0E1547]">
+                  {initial}
                 </div>
-                {profile?.display_name ?? profile?.username}
+                <span className="hidden sm:block text-sm font-extrabold text-[#0E1547]">
+                  {profile?.username ?? 'player'}
+                </span>
               </button>
               {showUser && (
-                <div className="absolute right-0 mt-2 w-48 bg-[#1a1d2e] border border-white/10 rounded-xl shadow-2xl py-1 z-50">
-                  <Link href="/profile" onClick={() => setShowUser(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5">
-                    <User size={14} /> Profile
-                  </Link>
-                  {isAdmin && (
-                    <Link href="/admin" onClick={() => setShowUser(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5">
-                      <Shield size={14} /> Admin
+                <>
+                  <button className="fixed inset-0 z-40 cursor-default" onClick={() => setShowUser(false)} aria-hidden />
+                  <div className="absolute right-0 mt-2 w-52 bg-white border-[3px] border-[#0E1547] rounded-xl shadow-chunk py-1 z-50">
+                    <Link href="/profile" onClick={() => setShowUser(false)} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#0E1547] hover:bg-[#FCD635]/30">
+                      <User size={16} /> Profile
                     </Link>
-                  )}
-                  <button onClick={handleSignOut} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-white/5">
-                    <LogOut size={14} /> Sign out
-                  </button>
-                </div>
+                    {isAdmin && (
+                      <Link href="/admin" onClick={() => setShowUser(false)} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#0E1547] hover:bg-[#FCD635]/30">
+                        <Shield size={16} /> Admin
+                      </Link>
+                    )}
+                    <button onClick={handleSignOut} className="w-full flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#FF3344] hover:bg-[#FF5E9A]/20">
+                      <LogOut size={16} /> Sign out
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           ) : (
             <>
-              <Link href="/login" className="text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5">
+              <Link href="/login" className="hidden sm:inline-flex items-center px-3 py-2 text-sm font-extrabold text-[#0E1547]">
                 Sign in
               </Link>
-              <Link href="/register" className="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition-colors">
+              <Link
+                href="/register"
+                className="inline-flex items-center px-4 py-2 bg-[#0E1547] text-[#FFF8E6] text-sm font-extrabold rounded-xl border-[3px] border-[#0E1547] shadow-chunk-sm hover:-translate-y-0.5 active:translate-y-1 active:shadow-none transition-all"
+              >
                 Sign up
               </Link>
             </>
           )}
         </div>
-
-        {/* Mobile menu toggle */}
-        <button
-          className="md:hidden text-gray-400 hover:text-white"
-          onClick={() => setMobileOpen((v) => !v)}
-        >
-          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-white/10 bg-[#0f1117] px-4 py-4 space-y-4">
+        <div className="md:hidden border-t-[3px] border-[#0E1547] bg-[#FFF8E6] px-4 py-4 space-y-3">
           <form onSubmit={handleSearch} className="flex gap-2">
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search games..."
-              className="flex-1 px-4 py-2 bg-[#1a1d2e] border border-white/10 rounded-lg text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-indigo-500"
+              placeholder="search games..."
+              className="flex-1 px-4 py-2.5 bg-white border-[3px] border-[#0E1547] rounded-xl text-sm font-medium text-[#0E1547]"
             />
-            <button type="submit" className="px-4 py-2 bg-indigo-600 rounded-lg text-white text-sm">Go</button>
+            <button type="submit" className="px-4 py-2.5 bg-[#0E1547] text-[#FFF8E6] rounded-xl text-sm font-extrabold border-[3px] border-[#0E1547]">
+              Go
+            </button>
           </form>
           <div className="grid grid-cols-2 gap-2">
             {CATEGORIES.map((cat) => (
-              <Link key={cat.slug} href={`/categories/${cat.slug}`} onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 bg-[#1a1d2e] rounded-lg">
-                {cat.icon} {cat.name}
+              <Link
+                key={cat.slug}
+                href={`/categories/${cat.slug}`}
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-extrabold text-[#0E1547] bg-white border-[3px] border-[#0E1547] rounded-xl"
+              >
+                <span>{cat.icon}</span>
+                {cat.name}
               </Link>
             ))}
           </div>
-          <div className="flex gap-2">
-            {user ? (
-              <>
-                <Link href="/profile" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2 bg-[#1a1d2e] rounded-lg text-sm text-gray-300">Profile</Link>
-                <button onClick={handleSignOut} className="flex-1 py-2 bg-red-600/20 rounded-lg text-sm text-red-400">Sign out</button>
-              </>
-            ) : (
-              <>
-                <Link href="/login" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2 bg-[#1a1d2e] rounded-lg text-sm text-gray-300">Sign in</Link>
-                <Link href="/register" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2 bg-indigo-600 rounded-lg text-sm text-white">Sign up</Link>
-              </>
-            )}
-          </div>
+          {!user && (
+            <div className="flex gap-2">
+              <Link href="/login" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2 bg-white border-[3px] border-[#0E1547] rounded-xl text-sm font-extrabold text-[#0E1547]">
+                Sign in
+              </Link>
+              <Link href="/register" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2 bg-[#0E1547] rounded-xl text-sm font-extrabold text-[#FFF8E6] border-[3px] border-[#0E1547]">
+                Sign up
+              </Link>
+            </div>
+          )}
         </div>
       )}
-    </nav>
+    </header>
   );
 }

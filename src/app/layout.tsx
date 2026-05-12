@@ -1,13 +1,20 @@
 import type { Metadata } from 'next';
-import { Outfit, Plus_Jakarta_Sans } from 'next/font/google';
+import { Bricolage_Grotesque, Space_Mono } from 'next/font/google';
 import './globals.css';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import ToastProvider from '@/components/ui/Toast';
 import { SITE_NAME, SITE_DESCRIPTION } from '@/lib/constants';
 
-const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
-const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-jakarta' });
+const bricolage = Bricolage_Grotesque({
+  subsets: ['latin'],
+  variable: '--font-bricolage',
+  display: 'swap',
+});
+const spaceMono = Space_Mono({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-space-mono',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: { default: SITE_NAME, template: `%s — ${SITE_NAME}` },
@@ -21,8 +28,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${outfit.variable} ${jakarta.variable} h-full`}>
-      <body className="min-h-full flex flex-col bg-[#0f1117] text-white antialiased">
+    <html lang="en" className={`${bricolage.variable} ${spaceMono.variable} h-full`}>
+      <body className="min-h-full flex flex-col bg-[#FFF8E6] text-[#0E1547] antialiased">
         <ToastProvider />
         <div className="flex-1">{children}</div>
       </body>
