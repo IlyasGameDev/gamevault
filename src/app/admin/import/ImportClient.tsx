@@ -37,6 +37,13 @@ export default function ImportClient({ categories }: { categories: Category[] })
   const [result, setResult] = useState<ImportResult | null>(null);
 
   useEffect(() => {
+    if (!importing) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [importing]);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function loadPage() {
@@ -219,6 +226,9 @@ export default function ImportClient({ categories }: { categories: Category[] })
               style={{ width: progress.total > 0 ? `${(progress.current / progress.total) * 100}%` : '0%' }}
             />
           </div>
+          <p className="text-xs text-yellow-500/80">
+            ⚠️ Do not refresh or close this tab — it will cancel the import.
+          </p>
         </div>
       )}
 
