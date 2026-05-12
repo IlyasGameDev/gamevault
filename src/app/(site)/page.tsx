@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabase/admin';
-import FeaturedCarousel from '@/components/games/FeaturedCarousel';
-import GameGrid from '@/components/games/GameGrid';
-import AllGamesSection from '@/components/games/AllGamesSection';
+import HomeFeaturedCarousel from '@/components/games/HomeFeaturedCarousel';
+import HomeGameCard from '@/components/games/HomeGameCard';
+import HomeAllGamesSection from '@/components/games/HomeAllGamesSection';
 import { GameWithCategories, Category } from '@/lib/types/database';
-import { ChevronRight } from 'lucide-react';
+import { Flame, Sparkles, Star, Gamepad2, ChevronRight } from 'lucide-react';
 
 async function getFeatured(): Promise<GameWithCategories[]> {
   const { data } = await supabaseAdmin
@@ -42,71 +42,121 @@ async function getCategories(): Promise<Category[]> {
   return data ?? [];
 }
 
+const CAT_COLORS = [
+  { bg: 'bg-pink-400', shadow: 'shadow-[0_5px_0_0_#be185d]', text: 'text-pink-900' },
+  { bg: 'bg-yellow-400', shadow: 'shadow-[0_5px_0_0_#b45309]', text: 'text-yellow-900' },
+  { bg: 'bg-emerald-400', shadow: 'shadow-[0_5px_0_0_#047857]', text: 'text-emerald-900' },
+  { bg: 'bg-purple-400', shadow: 'shadow-[0_5px_0_0_#6b21a8]', text: 'text-purple-900' },
+  { bg: 'bg-orange-400', shadow: 'shadow-[0_5px_0_0_#c2410c]', text: 'text-orange-900' },
+  { bg: 'bg-cyan-400', shadow: 'shadow-[0_5px_0_0_#0e7490]', text: 'text-cyan-900' },
+];
+
 export default async function HomePage() {
   const [featured, trending, newest, topRated, categories] = await Promise.all([
     getFeatured(),
-    getGames('popular', 8),
-    getGames('newest', 8),
-    getGames('rated', 8),
+    getGames('popular', 10),
+    getGames('newest', 10),
+    getGames('rated', 10),
     getCategories(),
   ]);
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-16">
-      {featured.length > 0 && (
-        <section>
-          <FeaturedCarousel games={featured} />
-        </section>
-      )}
+    <div className="bg-[#5B8DEF] min-h-screen">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-12">
+        {featured.length > 0 && (
+          <section>
+            <HomeFeaturedCarousel games={featured} />
+          </section>
+        )}
 
-      <section className="space-y-4">
-        <SectionHeader title="🔥 Trending Now" href="/games?sort=popular" />
-        <GameGrid games={trending} />
-      </section>
+        <Section title="Trending Now" icon={<Flame size={22} className="text-orange-500" fill="currentColor" />} href="/games?sort=popular">
+          <GameRow games={trending} />
+        </Section>
 
-      <section className="space-y-4">
-        <SectionHeader title="Browse by Category" href="/categories" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/categories/${cat.slug}`}
-              className="flex flex-col items-center gap-2 p-4 bg-[#1a1d2e] border border-white/5 rounded-xl hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all group"
-            >
-              <span className="text-3xl">{cat.icon}</span>
-              <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">{cat.name}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
+        <Section title="Browse by Category" icon={<Gamepad2 size={22} className="text-blue-600" />} href="/categories">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {categories.slice(0, 12).map((cat, i) => {
+              const c = CAT_COLORS[i % CAT_COLORS.length];
+              return (
+                <Link
+                  key={cat.id}
+                  href={`/categories/${cat.slug}`}
+                  className={`flex flex-col items-center justify-center gap-1 py-4 px-2 ${c.bg} ${c.shadow} ${c.text}
+                              rounded-2xl border-4 border-white font-extrabold
+                              hover:-translate-y-0.5 active:translate-y-1 active:shadow-none
+                              transition-all duration-150`}
+                >
+                  <span className="text-2xl">{cat.icon}</span>
+                  <span className="text-xs">{cat.name}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </Section>
 
-      <section className="space-y-4">
-        <SectionHeader title="✨ New Games" href="/games?sort=newest" />
-        <GameGrid games={newest} />
-      </section>
+        <Section title="New Games" icon={<Sparkles size={22} className="text-yellow-500" fill="currentColor" />} href="/games?sort=newest">
+          <GameRow games={newest} />
+        </Section>
 
-      {topRated.length > 0 && (
+        {topRated.length > 0 && (
+          <Section title="Top Rated" icon={<Star size={22} className="text-yellow-500" fill="currentColor" />} href="/games?sort=rated">
+            <GameRow games={topRated} />
+          </Section>
+        )}
+
         <section className="space-y-4">
-          <SectionHeader title="⭐ Top Rated" href="/games?sort=rated" />
-          <GameGrid games={topRated} />
+          <SectionHeader title="All Games" icon={<Gamepad2 size={22} className="text-blue-600" />} />
+          <HomeAllGamesSection />
         </section>
-      )}
-
-      <section className="space-y-4">
-        <h2 className="text-xl font-bold text-white">🎮 All Games</h2>
-        <AllGamesSection />
-      </section>
-    </main>
+      </main>
+    </div>
   );
 }
 
-function SectionHeader({ title, href }: { title: string; href: string }) {
+function Section({ title, icon, href, children }: { title: string; icon: React.ReactNode; href?: string; children: React.ReactNode }) {
+  return (
+    <section className="space-y-4">
+      <SectionHeader title={title} icon={icon} href={href} />
+      {children}
+    </section>
+  );
+}
+
+function SectionHeader({ title, icon, href }: { title: string; icon: React.ReactNode; href?: string }) {
   return (
     <div className="flex items-center justify-between">
-      <h2 className="text-xl font-bold text-white">{title}</h2>
-      <Link href={href} className="flex items-center gap-1 text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
-        See all <ChevronRight size={16} />
-      </Link>
+      <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-2xl shadow-[0_4px_0_0_rgba(43,89,195,0.55)]">
+        {icon}
+        <h2 className="text-lg font-extrabold text-slate-800">{title}</h2>
+      </div>
+      {href && (
+        <Link
+          href={href}
+          className="inline-flex items-center gap-1 px-3 py-1.5 bg-white text-blue-600 text-sm font-extrabold rounded-xl
+                     shadow-[0_3px_0_0_rgba(43,89,195,0.55)]
+                     hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none
+                     transition-all duration-150"
+        >
+          See all <ChevronRight size={16} />
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function GameRow({ games }: { games: GameWithCategories[] }) {
+  if (!games.length) {
+    return (
+      <div className="text-center py-12 bg-white/15 rounded-3xl text-white font-bold">
+        No games yet
+      </div>
+    );
+  }
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      {games.map((game) => (
+        <HomeGameCard key={game.id} game={game} />
+      ))}
     </div>
   );
 }
