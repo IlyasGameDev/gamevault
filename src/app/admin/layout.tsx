@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Gamepad2, LayoutDashboard, Tags, MessageSquare, Users, ExternalLink, Menu, X, Shield, LogOut } from 'lucide-react';
+import { Gamepad2, LayoutDashboard, Tags, MessageSquare, Users, ExternalLink, Menu, X, Shield, LogOut, CloudDownload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { SITE_NAME } from '@/lib/constants';
@@ -15,6 +15,7 @@ const NAV = [
   { href: '/admin/categories', label: 'Categories', icon: Tags },
   { href: '/admin/comments', label: 'Comments', icon: MessageSquare },
   { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/import', label: 'Import Games', icon: CloudDownload },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
