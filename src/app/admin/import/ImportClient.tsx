@@ -33,6 +33,7 @@ export default function ImportClient({ categories }: { categories: Category[] })
   const [categoryMap, setCategoryMap] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<'draft' | 'published'>('published');
   const [importing, setImporting] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [result, setResult] = useState<ImportResult | null>(null);
 
   useEffect(() => {
@@ -109,18 +110,35 @@ export default function ImportClient({ categories }: { categories: Category[] })
     const unmapped = [...new Set(gamesToImport.map((g) => g.category))].filter((c) => !categoryMap[c]);
     if (unmapped.length) { toast.error(`Map categories first: ${unmapped.join(', ')}`); return; }
 
+    const BATCH = 5;
+    const total = gamesToImport.length;
     setImporting(true);
+    setProgress({ current: 0, total });
+    setResult(null);
+
+    let totalImported = 0;
+    let totalSkipped = 0;
+    const allErrors: string[] = [];
+
     try {
-      const res = await fetch('/api/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ games: gamesToImport, categoryMap, status }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error);
-      setResult(json);
-      toast.success(`Imported ${json.imported} game${json.imported !== 1 ? 's' : ''}!`);
-      // Mark imported games as duplicates locally
+      for (let i = 0; i < gamesToImport.length; i += BATCH) {
+        const batch = gamesToImport.slice(i, i + BATCH);
+        const res = await fetch('/api/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ games: batch, categoryMap, status }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error);
+        totalImported += json.imported;
+        totalSkipped += json.skipped;
+        allErrors.push(...json.errors);
+        setProgress({ current: Math.min(i + BATCH, total), total });
+      }
+
+      const finalResult = { imported: totalImported, skipped: totalSkipped, errors: allErrors };
+      setResult(finalResult);
+      toast.success(`Imported ${totalImported} game${totalImported !== 1 ? 's' : ''}!`);
       const importedUrls = new Set(gamesToImport.map((g) => g.url));
       setGames((prev) => prev.map((g) => importedUrls.has(g.url) ? { ...g, isDuplicate: true } : g));
       setSelected(new Set());
@@ -187,6 +205,22 @@ export default function ImportClient({ categories }: { categories: Category[] })
           Import {selectedCount} game{selectedCount !== 1 ? 's' : ''}
         </button>
       </div>
+
+      {/* Progress bar */}
+      {importing && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs text-gray-400">
+            <span>Importing games…</span>
+            <span className="tabular-nums">{progress.current} / {progress.total}</span>
+          </div>
+          <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
+              style={{ width: progress.total > 0 ? `${(progress.current / progress.total) * 100}%` : '0%' }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Result banner */}
       {result && (
