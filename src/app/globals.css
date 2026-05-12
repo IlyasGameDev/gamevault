@@ -3,18 +3,6 @@
 @theme inline {
   --font-sans: var(--font-jakarta);
   --font-display: var(--font-outfit);
-  --animate-bounce-slow: bounce-slow 2.5s ease-in-out infinite;
-  --animate-wiggle: wiggle 1.5s ease-in-out infinite;
-}
-
-@keyframes bounce-slow {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
-@keyframes wiggle {
-  0%, 100% { transform: rotate(-3deg); }
-  50% { transform: rotate(3deg); }
 }
 
 * {
