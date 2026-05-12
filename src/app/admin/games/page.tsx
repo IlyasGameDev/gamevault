@@ -2,12 +2,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Plus, Edit2, Trash2, Search, CheckSquare, Square } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, CheckSquare, Square, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Game } from '@/lib/types/database';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import { formatDate, formatNumber } from '@/lib/utils';
 import toast from 'react-hot-toast';
+
+const ADMIN_LIMIT = 100;
 
 const statusVariant: Record<string, 'success' | 'warning' | 'default'> = {
   published: 'success', draft: 'warning', archived: 'default',
@@ -21,21 +23,28 @@ export default function AdminGamesPage() {
   const [typeFilter, setTypeFilter] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
 
-  const fetchGames = useCallback(async () => {
+  const fetchGames = useCallback(async (p: number) => {
     setLoading(true);
-    const params = new URLSearchParams();
-    if (statusFilter) params.set('status', statusFilter);
-    else params.set('status', 'all');
+    const params = new URLSearchParams({ limit: String(ADMIN_LIMIT), page: String(p) });
+    params.set('status', statusFilter || 'all');
     if (search) params.set('q', search);
-    const { data } = await fetch(`/api/games?${params}`).then((r) => r.json());
-    let result = (data ?? []) as Game[];
-    if (typeFilter) result = result.filter((g) => g.game_type === typeFilter);
-    setGames(result);
+    const { data, count } = await fetch(`/api/games?${params}`).then((r) => r.json());
+    setGames((data ?? []) as Game[]);
+    setTotal(count ?? 0);
+    setSelected(new Set());
     setLoading(false);
-  }, [search, statusFilter, typeFilter]);
+  }, [search, statusFilter]);
 
-  useEffect(() => { fetchGames(); }, [fetchGames]);
+  useEffect(() => {
+    setPage(1);
+    fetchGames(1);
+  }, [fetchGames]);
+
+  const visibleGames = typeFilter ? games.filter((g) => g.game_type === typeFilter) : games;
+  const totalPages = Math.ceil(total / ADMIN_LIMIT);
 
   function toggleSelect(id: string) {
     setSelected((prev) => {
@@ -46,13 +55,12 @@ export default function AdminGamesPage() {
   }
 
   function toggleAll() {
-    setSelected((prev) => prev.size === games.length ? new Set() : new Set(games.map((g) => g.id)));
+    setSelected((prev) => prev.size === visibleGames.length ? new Set() : new Set(visibleGames.map((g) => g.id)));
   }
 
   async function bulkAction(action: 'publish' | 'archive' | 'delete') {
     if (!selected.size) return;
     const ids = [...selected];
-
     if (action === 'delete' && !confirm(`Delete ${ids.length} game(s)? This cannot be undone.`)) return;
 
     setBulkLoading(true);
@@ -60,6 +68,7 @@ export default function AdminGamesPage() {
       if (action === 'delete') {
         await Promise.all(ids.map((id) => fetch(`/api/games/${id}`, { method: 'DELETE' })));
         setGames((g) => g.filter((game) => !selected.has(game.id)));
+        setTotal((t) => t - ids.length);
         toast.success(`Deleted ${ids.length} game(s)`);
       } else {
         const status = action === 'publish' ? 'published' : 'archived';
@@ -86,16 +95,25 @@ export default function AdminGamesPage() {
     const res = await fetch(`/api/games/${id}`, { method: 'DELETE' });
     if (res.ok) {
       setGames((g) => g.filter((game) => game.id !== id));
+      setTotal((t) => t - 1);
       toast.success('Game deleted');
     } else {
       toast.error('Failed to delete');
     }
   }
 
+  function goToPage(p: number) {
+    setPage(p);
+    fetchGames(p);
+  }
+
   return (
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Games</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-white">Games</h1>
+          {total > 0 && <p className="text-sm text-gray-500 mt-0.5">{total.toLocaleString()} total</p>}
+        </div>
         <Link href="/admin/games/new"
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">
           <Plus size={16} /> Add Game
@@ -128,7 +146,7 @@ export default function AdminGamesPage() {
         </select>
       </div>
 
-      {/* Bulk actions bar */}
+      {/* Bulk actions */}
       {selected.size > 0 && (
         <div className="flex items-center gap-3 px-4 py-3 bg-indigo-600/10 border border-indigo-500/30 rounded-xl">
           <span className="text-sm text-indigo-300 font-medium">{selected.size} selected</span>
@@ -144,7 +162,7 @@ export default function AdminGamesPage() {
       <div className="bg-[#1a1d2e] rounded-xl border border-white/5 overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-gray-500">Loading...</div>
-        ) : games.length === 0 ? (
+        ) : visibleGames.length === 0 ? (
           <div className="p-8 text-center text-gray-500">No games found</div>
         ) : (
           <div className="overflow-x-auto">
@@ -153,7 +171,7 @@ export default function AdminGamesPage() {
                 <tr className="text-left">
                   <th className="px-4 py-4 w-10">
                     <button onClick={toggleAll} className="text-gray-500 hover:text-white">
-                      {selected.size === games.length && games.length > 0
+                      {selected.size === visibleGames.length && visibleGames.length > 0
                         ? <CheckSquare size={16} className="text-indigo-400" />
                         : <Square size={16} />}
                     </button>
@@ -167,7 +185,7 @@ export default function AdminGamesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {games.map((game) => (
+                {visibleGames.map((game) => (
                   <tr key={game.id} className={`hover:bg-white/5 transition-colors ${selected.has(game.id) ? 'bg-indigo-500/5' : ''}`}>
                     <td className="px-4 py-4">
                       <button onClick={() => toggleSelect(game.id)} className="text-gray-500 hover:text-white">
@@ -214,6 +232,31 @@ export default function AdminGamesPage() {
           </div>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-gray-500">
+            Page {page} of {totalPages} ({total.toLocaleString()} games)
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => goToPage(page - 1)}
+              disabled={page === 1 || loading}
+              className="flex items-center gap-1 px-3 py-1.5 bg-[#1a1d2e] border border-white/10 rounded-lg text-gray-400 hover:text-white disabled:opacity-30 transition-colors"
+            >
+              <ChevronLeft size={14} /> Prev
+            </button>
+            <button
+              onClick={() => goToPage(page + 1)}
+              disabled={page >= totalPages || loading}
+              className="flex items-center gap-1 px-3 py-1.5 bg-[#1a1d2e] border border-white/10 rounded-lg text-gray-400 hover:text-white disabled:opacity-30 transition-colors"
+            >
+              Next <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -14,15 +14,16 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') ?? 'published';
     const search = searchParams.get('q') ?? '';
     const category = searchParams.get('category') ?? '';
-    const from = (page - 1) * GAMES_PER_PAGE;
-    const to = from + GAMES_PER_PAGE - 1;
+    const limit = Math.min(parseInt(searchParams.get('limit') ?? String(GAMES_PER_PAGE)), 200);
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
     let query = supabaseAdmin
       .from('games')
       .select('*, categories:game_categories(category:categories(*))', { count: 'exact' })
-      .eq('status', status)
       .range(from, to);
 
+    if (status !== 'all') query = query.eq('status', status);
     if (search) query = query.ilike('title', `%${search}%`);
     if (sort === 'newest') query = query.order('published_at', { ascending: false });
     else if (sort === 'popular') query = query.order('play_count', { ascending: false });

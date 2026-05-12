@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = searchParams.get('page') ?? '1';
 
-    const feedRes = await fetch(`https://gamemonetize.com/feed.php?format=0&page=${page}`, {
+    const feedRes = await fetch(`https://gamemonetize.com/feed.php?format=0&num=50&page=${page}`, {
       next: { revalidate: 0 },
     });
     if (!feedRes.ok) throw new Error('Failed to fetch GameMonetize feed');

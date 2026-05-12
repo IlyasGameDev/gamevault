@@ -9,23 +9,30 @@ import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 export const dynamic = 'force-dynamic';
 
 async function getStats(): Promise<AdminStats> {
-  const [gamesRes, usersRes, playsRes, commentsRes] = await Promise.all([
-    supabaseAdmin.from('games').select('status'),
-    supabaseAdmin.from('profiles').select('id', { count: 'exact', head: true }),
-    supabaseAdmin.from('play_history').select('id', { count: 'exact', head: true }),
-    supabaseAdmin.from('comments').select('is_flagged'),
-  ]);
+  const [publishedRes, draftRes, archivedRes, usersRes, playsRes, commentsRes, flaggedRes] =
+    await Promise.all([
+      supabaseAdmin.from('games').select('*', { count: 'exact', head: true }).eq('status', 'published'),
+      supabaseAdmin.from('games').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
+      supabaseAdmin.from('games').select('*', { count: 'exact', head: true }).eq('status', 'archived'),
+      supabaseAdmin.from('profiles').select('*', { count: 'exact', head: true }),
+      supabaseAdmin.from('play_history').select('*', { count: 'exact', head: true }),
+      supabaseAdmin.from('comments').select('*', { count: 'exact', head: true }),
+      supabaseAdmin.from('comments').select('*', { count: 'exact', head: true }).eq('is_flagged', true),
+    ]);
 
-  const games = gamesRes.data ?? [];
+  const published = publishedRes.count ?? 0;
+  const draft = draftRes.count ?? 0;
+  const archived = archivedRes.count ?? 0;
+
   return {
-    total_games: games.length,
-    published_games: games.filter((g) => g.status === 'published').length,
-    draft_games: games.filter((g) => g.status === 'draft').length,
-    archived_games: games.filter((g) => g.status === 'archived').length,
+    total_games: published + draft + archived,
+    published_games: published,
+    draft_games: draft,
+    archived_games: archived,
     total_users: usersRes.count ?? 0,
     total_plays: playsRes.count ?? 0,
-    total_comments: (commentsRes.data ?? []).length,
-    flagged_comments: (commentsRes.data ?? []).filter((c) => c.is_flagged).length,
+    total_comments: commentsRes.count ?? 0,
+    flagged_comments: flaggedRes.count ?? 0,
   };
 }
 

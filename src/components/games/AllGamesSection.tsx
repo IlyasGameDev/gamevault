@@ -1,9 +1,7 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import GameGrid from './GameGrid';
-import Button from '@/components/ui/Button';
 import { GameWithCategories } from '@/lib/types/database';
-import { ChevronDown } from 'lucide-react';
 
 export default function AllGamesSection() {
   const [games, setGames] = useState<GameWithCategories[]>([]);
@@ -11,6 +9,7 @@ export default function AllGamesSection() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   async function fetchGames(p: number, append = false) {
     if (p === 1) setLoading(true); else setLoadingMore(true);
@@ -27,22 +26,35 @@ export default function AllGamesSection() {
 
   useEffect(() => { fetchGames(1); }, []);
 
-  function loadMore() {
-    const next = page + 1;
-    setPage(next);
-    fetchGames(next, true);
-  }
+  useEffect(() => {
+    if (!hasMore || loading || loadingMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setPage((prev) => {
+            const next = prev + 1;
+            fetchGames(next, true);
+            return next;
+          });
+        }
+      },
+      { rootMargin: '400px' }
+    );
+
+    if (sentinelRef.current) observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadingMore]);
 
   return (
     <div className="space-y-6">
       <GameGrid games={games} loading={loading} cols={5} />
-      {hasMore && (
-        <div className="flex justify-center">
-          <Button variant="secondary" size="lg" loading={loadingMore} onClick={loadMore}>
-            <ChevronDown size={18} /> Load More Games
-          </Button>
+      {loadingMore && (
+        <div className="flex justify-center py-6">
+          <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
         </div>
       )}
+      <div ref={sentinelRef} className="h-1" />
     </div>
   );
 }
