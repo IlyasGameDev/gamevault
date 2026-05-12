@@ -83,6 +83,8 @@ export async function POST(request: NextRequest) {
           height,
           orientation: width >= height ? 'landscape' : 'portrait',
           status,
+          is_featured: false,
+          game_entry_file: 'index.html',
           published_at: status === 'published' ? new Date().toISOString() : null,
           developer: 'GameMonetize',
           developer_url: 'https://gamemonetize.com',
@@ -91,15 +93,20 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (error) {
+        console.error(`[import] insert failed for "${game.title}":`, error);
         errors.push(`Failed to insert "${game.title}": ${error.message}`);
         skipped++;
         continue;
       }
 
-      await supabaseAdmin.from('game_categories').insert({
+      const { error: catError } = await supabaseAdmin.from('game_categories').insert({
         game_id: inserted.id,
         category_id: categoryId,
       });
+      if (catError) {
+        console.error(`[import] category link failed for "${game.title}":`, catError);
+        errors.push(`Imported "${game.title}" but failed to link category: ${catError.message}`);
+      }
 
       existingUrls.add(game.url);
       imported++;
@@ -107,7 +114,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ imported, skipped, errors });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to import games';
+    const message = err instanceof Error
+      ? err.message
+      : (err as { message?: string })?.message ?? 'Failed to import games';
+    console.error('[import] unexpected error:', err);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
