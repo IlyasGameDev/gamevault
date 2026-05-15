@@ -14,7 +14,7 @@ export default function Skeleton({ className }: SkeletonProps) {
 
 export function GameCardSkeleton() {
   return (
-    <div className="rounded-xl overflow-hidden bg-[#1a1d2e] border border-white/5">
+    <div className="overflow-hidden rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A]">
       <Skeleton className="aspect-video w-full rounded-none" />
       <div className="p-3 space-y-2">
         <Skeleton className="h-4 w-3/4" />

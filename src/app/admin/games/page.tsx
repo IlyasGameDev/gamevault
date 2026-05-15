@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Plus, Edit2, Trash2, Search, CheckSquare, Square, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, CheckSquare, Square, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { Game } from '@/lib/types/database';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
@@ -21,6 +21,7 @@ export default function AdminGamesPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [heroFilter, setHeroFilter] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -39,17 +40,26 @@ export default function AdminGamesPage() {
   }, [search, statusFilter]);
 
   useEffect(() => {
-    setPage(1);
-    fetchGames(1);
+    void Promise.resolve().then(() => {
+      setPage(1);
+      fetchGames(1);
+    });
   }, [fetchGames]);
 
-  const visibleGames = typeFilter ? games.filter((g) => g.game_type === typeFilter) : games;
+  const visibleGames = games.filter((game) => {
+    if (typeFilter && game.game_type !== typeFilter) return false;
+    if (heroFilter === 'hero' && !game.is_featured) return false;
+    if (heroFilter === 'not-hero' && game.is_featured) return false;
+    return true;
+  });
   const totalPages = Math.ceil(total / ADMIN_LIMIT);
+  const heroCount = games.filter((game) => game.is_featured).length;
 
   function toggleSelect(id: string) {
     setSelected((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }
@@ -58,7 +68,7 @@ export default function AdminGamesPage() {
     setSelected((prev) => prev.size === visibleGames.length ? new Set() : new Set(visibleGames.map((g) => g.id)));
   }
 
-  async function bulkAction(action: 'publish' | 'archive' | 'delete') {
+  async function bulkAction(action: 'publish' | 'archive' | 'delete' | 'feature' | 'unfeature') {
     if (!selected.size) return;
     const ids = [...selected];
     if (action === 'delete' && !confirm(`Delete ${ids.length} game(s)? This cannot be undone.`)) return;
@@ -70,6 +80,17 @@ export default function AdminGamesPage() {
         setGames((g) => g.filter((game) => !selected.has(game.id)));
         setTotal((t) => t - ids.length);
         toast.success(`Deleted ${ids.length} game(s)`);
+      } else if (action === 'feature' || action === 'unfeature') {
+        const is_featured = action === 'feature';
+        await Promise.all(ids.map((id) =>
+          fetch(`/api/games/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_featured }),
+          })
+        ));
+        setGames((g) => g.map((game) => selected.has(game.id) ? { ...game, is_featured } : game));
+        toast.success(`${ids.length} game(s) ${is_featured ? 'added to' : 'removed from'} the hero`);
       } else {
         const status = action === 'publish' ? 'published' : 'archived';
         await Promise.all(ids.map((id) =>
@@ -87,6 +108,34 @@ export default function AdminGamesPage() {
       toast.error('Bulk action failed');
     } finally {
       setBulkLoading(false);
+    }
+  }
+
+  async function toggleHero(game: Game) {
+    const is_featured = !game.is_featured;
+    setGames((current) => current.map((item) =>
+      item.id === game.id ? { ...item, is_featured } : item
+    ));
+
+    try {
+      const res = await fetch(`/api/games/${game.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_featured }),
+      });
+      if (!res.ok) throw new Error('Failed to update hero selection');
+      toast.success(
+        is_featured
+          ? game.status === 'published'
+            ? 'Added to homepage hero'
+            : 'Added to hero. Publish it to show on the homepage.'
+          : 'Removed from homepage hero'
+      );
+    } catch {
+      setGames((current) => current.map((item) =>
+        item.id === game.id ? { ...item, is_featured: game.is_featured } : item
+      ));
+      toast.error('Failed to update hero selection');
     }
   }
 
@@ -113,6 +162,9 @@ export default function AdminGamesPage() {
         <div>
           <h1 className="text-2xl font-bold text-white">Games</h1>
           {total > 0 && <p className="text-sm text-gray-500 mt-0.5">{total.toLocaleString()} total</p>}
+          <p className="mt-1 text-xs text-gray-500">
+            Hero section: {heroCount} selected. The newest 5 selected published games appear on the homepage.
+          </p>
         </div>
         <Link href="/admin/games/new"
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">
@@ -144,6 +196,12 @@ export default function AdminGamesPage() {
           <option value="iframe">iframe</option>
           <option value="hosted">hosted</option>
         </select>
+        <select value={heroFilter} onChange={(e) => setHeroFilter(e.target.value)}
+          className="px-3 py-2 bg-[#1a1d2e] border border-white/10 rounded-lg text-sm text-gray-300 focus:outline-none">
+          <option value="">All hero states</option>
+          <option value="hero">In hero</option>
+          <option value="not-hero">Not in hero</option>
+        </select>
       </div>
 
       {/* Bulk actions */}
@@ -152,6 +210,8 @@ export default function AdminGamesPage() {
           <span className="text-sm text-indigo-300 font-medium">{selected.size} selected</span>
           <div className="flex gap-2 ml-2">
             <Button size="sm" variant="secondary" loading={bulkLoading} onClick={() => bulkAction('publish')}>Publish</Button>
+            <Button size="sm" variant="secondary" loading={bulkLoading} onClick={() => bulkAction('feature')}>Add to hero</Button>
+            <Button size="sm" variant="secondary" loading={bulkLoading} onClick={() => bulkAction('unfeature')}>Remove from hero</Button>
             <Button size="sm" variant="secondary" loading={bulkLoading} onClick={() => bulkAction('archive')}>Archive</Button>
             <Button size="sm" variant="danger" loading={bulkLoading} onClick={() => bulkAction('delete')}>Delete</Button>
           </div>
@@ -179,6 +239,7 @@ export default function AdminGamesPage() {
                   <th className="px-4 py-4 text-gray-500 font-medium">Game</th>
                   <th className="px-4 py-4 text-gray-500 font-medium">Type</th>
                   <th className="px-4 py-4 text-gray-500 font-medium">Status</th>
+                  <th className="px-4 py-4 text-gray-500 font-medium">Hero</th>
                   <th className="px-4 py-4 text-gray-500 font-medium">Plays</th>
                   <th className="px-4 py-4 text-gray-500 font-medium">Created</th>
                   <th className="px-4 py-4" />
@@ -210,6 +271,20 @@ export default function AdminGamesPage() {
                     </td>
                     <td className="px-4 py-4">
                       <Badge variant={statusVariant[game.status] ?? 'default'}>{game.status}</Badge>
+                    </td>
+                    <td className="px-4 py-4">
+                      <button
+                        onClick={() => toggleHero(game)}
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                          game.is_featured
+                            ? 'border-[#6C5CFF]/50 bg-[#6C5CFF]/15 text-[#9B8CFF] hover:bg-[#6C5CFF]/25'
+                            : 'border-white/10 text-gray-500 hover:border-white/30 hover:text-white'
+                        }`}
+                        title={game.is_featured ? 'Remove from homepage hero' : 'Add to homepage hero'}
+                      >
+                        <Star size={12} className={game.is_featured ? 'fill-current' : ''} />
+                        {game.is_featured ? 'Hero' : 'Add'}
+                      </button>
                     </td>
                     <td className="px-4 py-4 text-gray-400">{formatNumber(game.play_count)}</td>
                     <td className="px-4 py-4 text-gray-600">{formatDate(game.created_at)}</td>

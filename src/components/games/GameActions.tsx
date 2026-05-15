@@ -80,14 +80,14 @@ export default function GameActions({ game }: GameActionsProps) {
 
   return (
     <>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={toggleFavorite}
           disabled={favLoading}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
+          className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold transition-all ${
             isFav
-              ? 'bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30'
-              : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
+              ? 'border-[#6C5CFF]/50 bg-[#6C5CFF]/15 text-[#9B8CFF] hover:bg-[#6C5CFF]/25'
+              : 'border-[#2A2A2A] bg-[#1A1A1A] text-[#D8D8D8] hover:bg-[#242424] hover:text-white'
           }`}
         >
           <Heart size={16} className={isFav ? 'fill-current' : ''} />
@@ -96,14 +96,14 @@ export default function GameActions({ game }: GameActionsProps) {
 
         <button
           onClick={handleShare}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+          className="flex items-center gap-2 rounded-full border border-[#2A2A2A] bg-[#1A1A1A] px-4 py-2 text-sm font-bold text-[#D8D8D8] transition-all hover:bg-[#242424] hover:text-white"
         >
           <Share2 size={16} /> Share
         </button>
 
         <button
           onClick={handleReport}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-white/5 border border-white/10 text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+          className="flex items-center gap-2 rounded-full border border-[#2A2A2A] bg-[#1A1A1A] px-4 py-2 text-sm font-bold text-[#D8D8D8] transition-all hover:bg-red-500/10 hover:text-red-400"
         >
           <Flag size={16} /> Report
         </button>
@@ -111,7 +111,7 @@ export default function GameActions({ game }: GameActionsProps) {
 
       <Modal open={reportOpen} onClose={() => setReportOpen(false)} title="Report Game" size="sm">
         <div className="space-y-4">
-          <p className="text-sm text-gray-400">Why are you reporting "{game.title}"?</p>
+          <p className="text-sm text-gray-400">Why are you reporting {game.title}?</p>
           <div className="space-y-2">
             {['Broken / not loading', 'Inappropriate content', 'Wrong category', 'Copyright issue', 'Other'].map((reason) => (
               <label key={reason} className="flex items-center gap-3 cursor-pointer group">
@@ -121,7 +121,7 @@ export default function GameActions({ game }: GameActionsProps) {
                   value={reason}
                   checked={reportReason === reason}
                   onChange={() => setReportReason(reason)}
-                  className="accent-indigo-500"
+                  className="accent-[#6C5CFF]"
                 />
                 <span className="text-sm text-gray-300 group-hover:text-white transition-colors">{reason}</span>
               </label>

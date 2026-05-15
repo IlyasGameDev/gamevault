@@ -1,9 +1,8 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { Play, Maximize2, Minimize2 } from 'lucide-react';
+import { Gamepad2, Play, Maximize2, Minimize2 } from 'lucide-react';
 import { Game } from '@/lib/types/database';
 import Image from 'next/image';
-import Button from '@/components/ui/Button';
 
 interface GamePlayerProps {
   game: Game;
@@ -54,23 +53,28 @@ export default function GamePlayer({ game }: GamePlayerProps) {
   return (
     <div
       ref={containerRef}
-      className="relative w-full bg-black rounded-xl overflow-hidden"
+      className="relative w-full overflow-hidden rounded-2xl border border-[#2A2A2A] bg-black shadow-2xl shadow-black/40"
       style={{ aspectRatio: `${game.width}/${game.height}` }}
     >
       {!started ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-          {game.thumbnail_url && (
-            <Image src={game.thumbnail_url} alt={game.title} fill className="object-cover opacity-30" />
+          {game.thumbnail_url ? (
+            <Image src={game.thumbnail_url} alt={game.title} fill className="object-cover opacity-35" />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-[#181818]">
+              <Gamepad2 size={56} className="text-[#555]" />
+            </div>
           )}
           <div className="relative z-10 flex flex-col items-center gap-4">
             <button
               onClick={handlePlay}
-              className="w-20 h-20 rounded-full bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center shadow-2xl shadow-indigo-500/50 transition-transform hover:scale-110"
+              className="flex h-20 w-20 items-center justify-center rounded-full bg-[#6C5CFF] shadow-2xl shadow-black/50 transition-transform hover:scale-105 hover:bg-[#5A49F5]"
+              aria-label={`Play ${game.title}`}
             >
               <Play size={36} fill="white" className="text-white ml-1" />
             </button>
-            <p className="text-white font-semibold text-lg">{game.title}</p>
-            <p className="text-gray-400 text-sm">Click to play</p>
+            <p className="text-lg font-bold text-white">{game.title}</p>
+            <p className="text-sm text-[#A8A8A8]">Click to play instantly</p>
           </div>
         </div>
       ) : (
@@ -84,7 +88,7 @@ export default function GamePlayer({ game }: GamePlayerProps) {
           />
           <button
             onClick={toggleFullscreen}
-            className="absolute top-3 right-3 p-2 bg-black/60 hover:bg-black/80 rounded-lg text-white transition-colors z-10"
+            className="absolute right-3 top-3 z-10 rounded-full bg-black/70 p-2 text-white transition-colors hover:bg-black"
             title="Toggle fullscreen"
           >
             {fullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}

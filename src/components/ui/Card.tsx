@@ -12,7 +12,7 @@ export function Card({ className, glass, children, ...props }: CardProps) {
         'rounded-xl border border-white/10',
         glass
           ? 'bg-white/5 backdrop-blur-sm'
-          : 'bg-[#1a1d2e]',
+          : 'bg-[#1A1A1A]',
         className
       )}
       {...props}

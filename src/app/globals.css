@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-jakarta);
-  --font-display: var(--font-outfit);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-inter);
 }
 
 * {
@@ -14,11 +14,13 @@ html {
 }
 
 body {
-  font-family: var(--font-jakarta), system-ui, sans-serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
+  background: #0F0F0F;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-outfit), system-ui, sans-serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
+  letter-spacing: 0;
 }
 
 ::-webkit-scrollbar {
@@ -26,12 +28,12 @@ h1, h2, h3, h4, h5, h6 {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f1117;
+  background: #0F0F0F;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.16);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.28);
 }

@@ -38,7 +38,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const parsed = gameSchema.partial().safeParse(body);
     if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? parsed.error.message }, { status: 400 });
 
-    const { category_ids, ...gameData } = parsed.data;
+    const submittedKeys = new Set(Object.keys(body));
+    const updateData = Object.fromEntries(
+      Object.entries(parsed.data).filter(([key]) => submittedKeys.has(key))
+    ) as typeof parsed.data;
+    const { category_ids, ...gameData } = updateData;
 
     const { data: existing } = await supabaseAdmin.from('games').select('status').eq('id', id).single();
     const wasPublished = existing?.status === 'published';

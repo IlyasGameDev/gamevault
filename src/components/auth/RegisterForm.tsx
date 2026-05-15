@@ -8,6 +8,7 @@ import { registerSchema } from '@/lib/validations';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import toast from 'react-hot-toast';
+import { SITE_NAME } from '@/lib/constants';
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -42,8 +43,8 @@ export default function RegisterForm() {
   return (
     <div className="w-full max-w-md space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Create account</h1>
-        <p className="text-gray-500 mt-1 text-sm">Join GameVault and start playing</p>
+        <h1 className="text-2xl font-extrabold text-white">Create account</h1>
+        <p className="mt-1 text-sm text-[#A8A8A8]">Join {SITE_NAME} and start playing</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
@@ -65,9 +66,9 @@ export default function RegisterForm() {
           Create account
         </Button>
       </form>
-      <p className="text-center text-sm text-gray-500">
+      <p className="text-center text-sm text-[#A8A8A8]">
         Already have an account?{' '}
-        <Link href="/login" className="text-indigo-400 hover:text-indigo-300">Sign in</Link>
+        <Link href="/login" className="font-semibold text-[#9B8CFF] hover:text-white">Sign in</Link>
       </p>
     </div>
   );

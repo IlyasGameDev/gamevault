@@ -11,8 +11,11 @@ interface GameGridProps {
 export default function GameGrid({ games = [], loading, cols = 4 }: GameGridProps) {
   const gridClass =
     cols === 5
-      ? 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'
-      : 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4';
+      ? 'grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+      : 'grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4';
+  const uniqueGames = games.filter((game, index, allGames) =>
+    allGames.findIndex((candidate) => candidate.id === game.id) === index
+  );
 
   if (loading) {
     return (
@@ -24,10 +27,9 @@ export default function GameGrid({ games = [], loading, cols = 4 }: GameGridProp
     );
   }
 
-  if (!games.length) {
+  if (!uniqueGames.length) {
     return (
-      <div className="text-center py-16 text-gray-500">
-        <span className="text-4xl mb-4 block">🎮</span>
+      <div className="rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] py-16 text-center text-[#A8A8A8]">
         No games found
       </div>
     );
@@ -35,7 +37,7 @@ export default function GameGrid({ games = [], loading, cols = 4 }: GameGridProp
 
   return (
     <div className={gridClass}>
-      {games.map((game) => (
+      {uniqueGames.map((game) => (
         <GameCard key={game.id} game={game} />
       ))}
     </div>

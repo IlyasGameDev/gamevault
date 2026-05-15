@@ -12,23 +12,25 @@ function SearchContent() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!q) { setGames([]); return; }
-    setLoading(true);
-    fetch(`/api/games?q=${encodeURIComponent(q)}&sort=popular`)
-      .then((r) => r.json())
-      .then(({ data }) => { setGames(data ?? []); setLoading(false); });
+    void Promise.resolve().then(() => {
+      if (!q) { setGames([]); return; }
+      setLoading(true);
+      fetch(`/api/games?q=${encodeURIComponent(q)}&sort=popular`)
+        .then((r) => r.json())
+        .then(({ data }) => { setGames(data ?? []); setLoading(false); });
+    });
   }, [q]);
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
       <div className="flex items-center gap-3">
-        <Search size={24} className="text-gray-500" />
-        <h1 className="text-2xl font-bold text-white">
+        <Search size={24} className="text-[#6C5CFF]" />
+        <h1 className="text-2xl font-extrabold text-white">
           {q ? `Results for "${q}"` : 'Search Games'}
         </h1>
       </div>
       {!q ? (
-        <p className="text-gray-500">Enter a search term to find games.</p>
+        <p className="text-[#A8A8A8]">Enter a search term to find games.</p>
       ) : (
         <GameGrid games={games} loading={loading} />
       )}

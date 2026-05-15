@@ -1,5 +1,5 @@
-export const SITE_NAME = 'GameVault';
-export const SITE_DESCRIPTION = 'Play hundreds of free browser games — action, puzzle, racing, and more.';
+export const SITE_NAME = 'YoPlayables';
+export const SITE_DESCRIPTION = 'Play free WebGL and browser games instantly. No downloads, no installs.';
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 export const GAMES_PER_PAGE = 24;

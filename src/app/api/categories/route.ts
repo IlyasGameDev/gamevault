@@ -2,8 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { categorySchema } from '@/lib/validations';
+import { getCategoriesWithPublishedGames } from '@/lib/categories';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const active = request.nextUrl.searchParams.get('active');
+  if (active === 'published') {
+    const data = await getCategoriesWithPublishedGames();
+    return NextResponse.json({ data });
+  }
+
   const { data, error } = await supabaseAdmin
     .from('categories')
     .select('*, game_count:game_categories(count)')

@@ -8,7 +8,12 @@ import GameRating from '@/components/games/GameRating';
 import GameComments from '@/components/games/GameComments';
 import GameActions from '@/components/games/GameActions';
 import GameGrid from '@/components/games/GameGrid';
+import GameCard from '@/components/games/GameCard';
 import { SITE_NAME } from '@/lib/constants';
+import Badge from '@/components/ui/Badge';
+import Link from 'next/link';
+import { ExternalLink } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
 
 export const revalidate = 3600;
 
@@ -85,41 +90,76 @@ export default async function GamePage({ params }: Props) {
   };
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
+    <main className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 sm:py-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      {/* Player */}
-      <div className="max-w-4xl mx-auto">
-        <GamePlayer game={game} />
+
+      <div className="space-y-3">
+        <div className="flex flex-wrap gap-2">
+          {game.categories.map((cat) => (
+            <Link key={cat.id} href={`/categories/${cat.slug}`}>
+              <Badge variant="blue" className="cursor-pointer font-bold hover:opacity-80">{cat.name}</Badge>
+            </Link>
+          ))}
+        </div>
+        <h1 className="text-3xl font-extrabold text-white sm:text-4xl">{game.title}</h1>
+        <div className="flex flex-wrap items-center gap-3 text-sm text-[#A8A8A8]">
+          {game.developer && (
+            <span>
+              By{' '}
+              {game.developer_url ? (
+                <a href={game.developer_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-semibold text-white hover:text-[#9B8CFF]">
+                  {game.developer} <ExternalLink size={12} />
+                </a>
+              ) : (
+                <span className="font-semibold text-white">{game.developer}</span>
+              )}
+            </span>
+          )}
+          {game.published_at && <span>Released {formatDate(game.published_at)}</span>}
+          <span>{game.play_count.toLocaleString()} plays</span>
+          {game.rating_count > 0 && <span>{game.rating_avg.toFixed(1)} rating</span>}
+        </div>
       </div>
 
-      {/* Info + Rating */}
-      <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          <GameInfo game={game} />
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="space-y-4">
+          <GamePlayer game={game} />
           <GameActions game={game} />
-          <div>
-            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Rate this game</h3>
+          <GameInfo game={game} />
+          <div className="rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] p-5">
+            <h3 className="mb-3 text-sm font-extrabold uppercase text-[#A8A8A8]">Rate this game</h3>
             <GameRating game={game} />
           </div>
           <GameComments gameId={game.id} />
         </div>
-        <aside className="space-y-4">
-          <div className="bg-[#1a1d2e] rounded-xl p-4 border border-white/5 text-sm space-y-3">
-            <h3 className="font-semibold text-white">Game Info</h3>
-            <dl className="space-y-2 text-gray-500">
-              <div className="flex justify-between"><dt>Type</dt><dd className="text-gray-300 capitalize">{game.game_type}</dd></div>
-              <div className="flex justify-between"><dt>Size</dt><dd className="text-gray-300">{game.width} × {game.height}</dd></div>
-              <div className="flex justify-between"><dt>Plays</dt><dd className="text-gray-300">{game.play_count.toLocaleString()}</dd></div>
-              {game.developer && <div className="flex justify-between"><dt>Developer</dt><dd className="text-gray-300 truncate max-w-[120px]">{game.developer}</dd></div>}
+
+        <aside className="space-y-6 xl:sticky xl:top-24 xl:self-start">
+          <div className="rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] p-5 text-sm">
+            <h2 className="font-extrabold text-white">Game Info</h2>
+            <dl className="mt-4 space-y-3 text-[#A8A8A8]">
+              <div className="flex justify-between gap-4"><dt>Type</dt><dd className="text-right font-semibold capitalize text-white">{game.game_type}</dd></div>
+              <div className="flex justify-between gap-4"><dt>Player</dt><dd className="text-right font-semibold text-white">{game.width} x {game.height}</dd></div>
+              <div className="flex justify-between gap-4"><dt>Plays</dt><dd className="text-right font-semibold text-white">{game.play_count.toLocaleString()}</dd></div>
+              {game.developer && <div className="flex justify-between gap-4"><dt>Developer</dt><dd className="max-w-[150px] truncate text-right font-semibold text-white">{game.developer}</dd></div>}
             </dl>
           </div>
+
+          {related.length > 0 && (
+            <section className="hidden space-y-3 xl:block">
+              <h2 className="font-extrabold text-white">Similar games</h2>
+              <div className="space-y-3">
+                {related.slice(0, 4).map((relatedGame) => (
+                  <GameCard key={relatedGame.id} game={relatedGame} />
+                ))}
+              </div>
+            </section>
+          )}
         </aside>
       </div>
 
-      {/* Related */}
       {related.length > 0 && (
-        <section className="max-w-4xl mx-auto space-y-4">
-          <h2 className="text-lg font-bold text-white">More Games Like This</h2>
+        <section className="space-y-4 xl:hidden">
+          <h2 className="text-lg font-extrabold text-white">More Games Like This</h2>
           <GameGrid games={related} />
         </section>
       )}

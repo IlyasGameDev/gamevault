@@ -40,14 +40,16 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (profile) {
-      setDisplayName(profile.display_name ?? profile.username ?? '');
-      setAvatarUrl(profile.avatar_url ?? '');
+      void Promise.resolve().then(() => {
+        setDisplayName(profile.display_name ?? profile.username ?? '');
+        setAvatarUrl(profile.avatar_url ?? '');
+      });
     }
   }, [profile]);
 
   useEffect(() => {
     if (!user) return;
-    setGamesLoading(true);
+    void Promise.resolve().then(() => setGamesLoading(true));
     async function load() {
       if (tab === 'favorites') {
         const { data } = await supabase
@@ -153,12 +155,12 @@ export default function ProfilePage() {
   ];
 
   return (
-    <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+    <main className="mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6">
       {/* Profile header */}
       <div className="flex items-start gap-6">
         {/* Avatar with upload overlay */}
         <div className="relative shrink-0 group">
-          <div className="w-20 h-20 rounded-2xl overflow-hidden bg-indigo-600 flex items-center justify-center text-3xl font-bold text-white">
+          <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-[#6C5CFF] text-3xl font-bold text-white">
             {avatarUrl ? (
               <Image
                 src={avatarUrl}
@@ -193,14 +195,14 @@ export default function ProfilePage() {
         </div>
 
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-white">{profile.display_name ?? profile.username}</h1>
-          <p className="text-gray-500 text-sm">@{profile.username}</p>
-          <p className="text-gray-600 text-xs">Member since {formatDate(profile.created_at)}</p>
+          <h1 className="text-2xl font-extrabold text-white">{profile.display_name ?? profile.username}</h1>
+          <p className="text-sm text-[#A8A8A8]">@{profile.username}</p>
+          <p className="text-xs text-[#777]">Member since {formatDate(profile.created_at)}</p>
         </div>
       </div>
 
       {/* Edit profile */}
-      <div className="bg-[#1a1d2e] rounded-xl p-6 border border-white/10 space-y-4">
+      <div className="space-y-4 rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] p-6">
         <h2 className="font-semibold text-white">Edit Profile</h2>
         <div className="flex gap-3 max-w-md">
           <Input
@@ -211,7 +213,7 @@ export default function ProfilePage() {
           />
           <Button onClick={saveProfile} loading={saving} variant="secondary">Save</Button>
         </div>
-        <p className="text-xs text-gray-600">Click your avatar above to change it (max 2MB, images only)</p>
+        <p className="text-xs text-[#777]">Click your avatar above to change it (max 2MB, images only)</p>
       </div>
 
       {/* Tabs */}
@@ -222,7 +224,7 @@ export default function ProfilePage() {
             onClick={() => setTab(t.id)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === t.id
-                ? 'border-indigo-500 text-white'
+                ? 'border-[#6C5CFF] text-white'
                 : 'border-transparent text-gray-500 hover:text-gray-300'
             }`}
           >
@@ -235,7 +237,7 @@ export default function ProfilePage() {
         gamesLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="animate-pulse bg-[#1a1d2e] rounded-xl aspect-video" />
+              <div key={i} className="aspect-video animate-pulse rounded-2xl bg-[#1A1A1A]" />
             ))}
           </div>
         ) : ratedGames.length === 0 ? (

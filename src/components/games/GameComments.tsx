@@ -57,25 +57,25 @@ function CommentItem({
 
   return (
     <div className={depth > 0 ? 'ml-8 border-l-2 border-white/5 pl-4' : ''}>
-      <div className="bg-[#1a1d2e] rounded-xl p-4 border border-white/5">
+      <div className="rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] p-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-indigo-600/40 flex items-center justify-center text-xs font-bold text-indigo-300">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#6C5CFF]/20 text-xs font-bold text-[#9B8CFF]">
               {(comment.profiles?.display_name ?? comment.profiles?.username ?? 'U')[0].toUpperCase()}
             </div>
             <span className="text-sm font-medium text-white">
               {comment.profiles?.display_name ?? comment.profiles?.username}
             </span>
-            {depth > 0 && <span className="text-xs text-indigo-400 flex items-center gap-1"><CornerDownRight size={10} /> reply</span>}
+            {depth > 0 && <span className="flex items-center gap-1 text-xs text-[#9B8CFF]"><CornerDownRight size={10} /> reply</span>}
           </div>
-          <span className="text-xs text-gray-600">{timeAgo(comment.created_at)}</span>
+          <span className="text-xs text-[#777]">{timeAgo(comment.created_at)}</span>
         </div>
-        <p className="text-sm text-gray-300 whitespace-pre-wrap">{comment.content}</p>
+        <p className="whitespace-pre-wrap text-sm text-[#D8D8D8]">{comment.content}</p>
 
         {depth === 0 && user && (
           <button
             onClick={() => setReplyOpen((v) => !v)}
-            className="mt-2 text-xs text-gray-500 hover:text-indigo-400 transition-colors"
+            className="mt-2 text-xs text-[#A8A8A8] transition-colors hover:text-[#9B8CFF]"
           >
             {replyOpen ? 'Cancel' : '↩ Reply'}
           </button>
@@ -90,7 +90,7 @@ function CommentItem({
             placeholder="Write a reply..."
             rows={2}
             maxLength={1000}
-            className="w-full px-4 py-2.5 bg-[#1a1d2e] border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:border-indigo-500 resize-none text-sm"
+            className="w-full resize-none rounded-xl border border-[#2A2A2A] bg-[#1A1A1A] px-4 py-2.5 text-sm text-white outline-none placeholder:text-[#777] focus:border-[#6C5CFF]"
           />
           <div className="flex gap-2">
             <Button type="submit" size="sm" loading={submitting} disabled={!replyText.trim()}>Post Reply</Button>
@@ -154,7 +154,7 @@ export default function GameComments({ gameId }: GameCommentsProps) {
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-white">Comments {comments.length > 0 && <span className="text-gray-500 font-normal text-base">({comments.length})</span>}</h3>
+      <h3 className="text-lg font-extrabold text-white">Comments {comments.length > 0 && <span className="text-base font-normal text-[#A8A8A8]">({comments.length})</span>}</h3>
 
       {user ? (
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -164,16 +164,16 @@ export default function GameComments({ gameId }: GameCommentsProps) {
             placeholder="Share your thoughts..."
             rows={3}
             maxLength={1000}
-            className="w-full px-4 py-3 bg-[#1a1d2e] border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:border-indigo-500 resize-none text-sm"
+            className="w-full resize-none rounded-xl border border-[#2A2A2A] bg-[#1A1A1A] px-4 py-3 text-sm text-white outline-none placeholder:text-[#777] focus:border-[#6C5CFF]"
           />
           <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-600">{content.length}/1000</span>
+            <span className="text-xs text-[#777]">{content.length}/1000</span>
             <Button type="submit" size="sm" loading={submitting} disabled={!content.trim()}>Post comment</Button>
           </div>
         </form>
       ) : (
-        <p className="text-sm text-gray-500">
-          <a href="/login" className="text-indigo-400 hover:underline">Sign in</a> to leave a comment
+        <p className="text-sm text-[#A8A8A8]">
+          <a href="/login" className="font-semibold text-[#9B8CFF] hover:underline">Sign in</a> to leave a comment
         </p>
       )}
 
@@ -188,7 +188,7 @@ export default function GameComments({ gameId }: GameCommentsProps) {
           ))}
         </div>
       ) : comments.length === 0 ? (
-        <p className="text-sm text-gray-500">No comments yet. Be the first!</p>
+        <p className="text-sm text-[#A8A8A8]">No comments yet. Be the first!</p>
       ) : (
         <div className="space-y-4">
           {comments.map((comment) => (

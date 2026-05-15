@@ -1,11 +1,11 @@
 import RegisterForm from '@/components/auth/RegisterForm';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Create Account — GameVault' };
+export const metadata = { title: 'Create Account — YoPlayables' };
 
 export default function RegisterPage() {
   return (
-    <main className="min-h-screen bg-[#0f1117] flex items-center justify-center p-4">
+    <main className="flex min-h-screen items-center justify-center bg-[#0F0F0F] p-4">
       <RegisterForm />
     </main>
   );

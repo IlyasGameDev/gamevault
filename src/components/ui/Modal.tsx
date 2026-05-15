@@ -25,7 +25,7 @@ export default function Modal({ open, onClose, title, children, size = 'md' }: M
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       <div
         className={cn(
-          'relative bg-[#1a1d2e] border border-white/10 rounded-2xl shadow-2xl w-full',
+          'relative w-full rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] shadow-2xl',
           {
             'max-w-sm': size === 'sm',
             'max-w-md': size === 'md',

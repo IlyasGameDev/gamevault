@@ -33,7 +33,7 @@ async function getCategoryGames(categoryId: string): Promise<GameWithCategories[
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const cat = await getCategory(slug);
-  return cat ? { title: `${cat.name} Games — GameVault` } : {};
+  return cat ? { title: `${cat.name} Games — YoPlayables` } : {};
 }
 
 export default async function CategoryPage({ params }: Props) {
@@ -46,9 +46,8 @@ export default async function CategoryPage({ params }: Props) {
   if (!cat) notFound();
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-gray-500">
+    <main className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6">
+      <nav className="flex items-center gap-2 text-sm text-[#A8A8A8]">
         <Link href="/" className="hover:text-white">Home</Link>
         <ChevronRight size={14} />
         <Link href="/categories" className="hover:text-white">Categories</Link>
@@ -56,13 +55,12 @@ export default async function CategoryPage({ params }: Props) {
         <span className="text-gray-300">{cat.name}</span>
       </nav>
 
-      {/* Header */}
       <div className="flex items-center gap-4">
         <span className="text-5xl">{cat.icon}</span>
         <div>
-          <h1 className="text-3xl font-bold text-white">{cat.name}</h1>
-          <p className="text-gray-500 mt-1">{games.length} games</p>
-          {cat.description && <p className="text-gray-400 text-sm mt-1">{cat.description}</p>}
+          <h1 className="text-3xl font-extrabold text-white">{cat.name}</h1>
+          <p className="mt-1 text-[#A8A8A8]">{games.length} games</p>
+          {cat.description && <p className="mt-1 text-sm text-[#D8D8D8]">{cat.description}</p>}
         </div>
       </div>
 
