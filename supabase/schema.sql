@@ -106,6 +106,8 @@ CREATE TABLE game_categories (
 -- ============================================
 -- RATINGS
 -- ============================================
+CREATE TYPE game_reaction_type AS ENUM ('like', 'dislike');
+
 CREATE TABLE ratings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   game_id UUID REFERENCES games(id) ON DELETE CASCADE,
@@ -114,6 +116,19 @@ CREATE TABLE ratings (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(game_id, user_id)
+);
+
+CREATE TABLE game_reactions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  game_id UUID REFERENCES games(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  visitor_id TEXT,
+  voter_key TEXT NOT NULL,
+  reaction game_reaction_type NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(game_id, voter_key),
+  CHECK (user_id IS NOT NULL OR visitor_id IS NOT NULL)
 );
 
 -- ============================================
@@ -166,6 +181,7 @@ CREATE INDEX idx_comments_game ON comments(game_id, created_at DESC);
 CREATE INDEX idx_favorites_user ON favorites(user_id);
 CREATE INDEX idx_play_history_user ON play_history(user_id, played_at DESC);
 CREATE INDEX idx_ratings_game ON ratings(game_id);
+CREATE INDEX idx_game_reactions_game_reaction ON game_reactions(game_id, reaction);
 
 -- ============================================
 -- ROW LEVEL SECURITY
@@ -175,6 +191,7 @@ ALTER TABLE games ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE game_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ratings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE game_reactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE play_history ENABLE ROW LEVEL SECURITY;
@@ -200,6 +217,11 @@ CREATE POLICY "Admins can manage game categories" ON game_categories FOR ALL USI
 CREATE POLICY "Ratings are viewable by everyone" ON ratings FOR SELECT USING (true);
 CREATE POLICY "Authenticated users can rate" ON ratings FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update own rating" ON ratings FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Game reactions are viewable by everyone" ON game_reactions FOR SELECT USING (true);
+CREATE POLICY "Admins can manage all game reactions" ON game_reactions FOR ALL USING (
+  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+);
 
 CREATE POLICY "Non-hidden comments are viewable" ON comments FOR SELECT USING (is_hidden = false);
 CREATE POLICY "Authenticated users can comment" ON comments FOR INSERT WITH CHECK (auth.uid() = user_id);

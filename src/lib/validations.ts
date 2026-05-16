@@ -39,6 +39,15 @@ export const ratingSchema = z.object({
   score: z.number().int().min(1).max(5),
 });
 
+export const reactionQuerySchema = z.object({
+  game_id: z.string().uuid(),
+});
+
+export const reactionSchema = z.object({
+  game_id: z.string().uuid(),
+  reaction: z.enum(['like', 'dislike']).nullable(),
+});
+
 export const registerSchema = z.object({
   username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_]+$/),
   email: z.string().email(),

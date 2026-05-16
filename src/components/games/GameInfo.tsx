@@ -5,11 +5,12 @@ import Badge from '@/components/ui/Badge';
 
 interface GameInfoProps {
   game: GameWithCategories;
+  embedded?: boolean;
 }
 
-export default function GameInfo({ game }: GameInfoProps) {
+export default function GameInfo({ game, embedded = false }: GameInfoProps) {
   return (
-    <div className="space-y-6 rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] p-5">
+    <div className={embedded ? 'space-y-6' : 'space-y-6 rounded-2xl border border-[#2A2A2A] bg-[#1A1A1A] p-5'}>
       {game.description && (
         <div>
           <h2 className="mb-2 text-sm font-extrabold uppercase text-[#A8A8A8]">About this game</h2>

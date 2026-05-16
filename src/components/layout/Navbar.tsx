@@ -6,24 +6,30 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Bell, Clock3, Heart, LogOut, Menu, Search, Shield, User, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import GameIcon from '@/components/ui/GameIcon';
 import { createClient } from '@/lib/supabase/client';
 import { Category, Game } from '@/lib/types/database';
 import toast from 'react-hot-toast';
 
-export default function Navbar({ categories = [] }: { categories?: Category[] }) {
+export default function Navbar({
+  categories = [],
+  sidebarExpanded = false,
+  onToggleSidebar,
+}: {
+  categories?: Category[];
+  sidebarExpanded?: boolean;
+  onToggleSidebar?: () => void;
+}) {
   const { user, profile, signOut, isAdmin } = useAuth();
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [search, setSearch] = useState('');
-  const [showCats, setShowCats] = useState(false);
   const [showUser, setShowUser] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [likedGames, setLikedGames] = useState<Game[]>([]);
   const [recentGames, setRecentGames] = useState<Game[]>([]);
-  const categoriesMenuId = 'desktop-categories-menu';
+  const sidebarId = 'category-sidebar';
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -90,51 +96,22 @@ export default function Navbar({ categories = [] }: { categories?: Category[] })
     <nav className="sticky top-0 z-40 border-b border-[#252439] bg-[#171722]/95 backdrop-blur-md">
       <div className="mx-auto flex h-[60px] max-w-[1540px] items-center gap-3 px-4 sm:px-6">
         <div className="flex min-w-0 flex-1 items-center gap-3 md:basis-0">
-          <div className="relative">
+          <div className="relative hidden w-[46px] shrink-0 md:-ml-6 md:flex">
             <button
               type="button"
               onClick={() => {
                 closeDesktopPanels();
-                setShowCats((value) => !value);
+                onToggleSidebar?.();
               }}
-              className={`hidden h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-white/10 md:flex ${
-                showCats ? 'bg-white/10 text-[#9B8CFF]' : 'text-white'
+              className={`flex h-[60px] w-[46px] items-center justify-center transition-colors hover:bg-white/10 ${
+                sidebarExpanded ? 'bg-white/10 text-[#9B8CFF]' : 'text-white'
               }`}
-              aria-label="Browse categories"
-              aria-controls={categoriesMenuId}
-              aria-expanded={showCats}
-              aria-haspopup="menu"
+              aria-label={sidebarExpanded ? 'Collapse categories' : 'Expand categories'}
+              aria-controls={sidebarId}
+              aria-expanded={sidebarExpanded}
             >
               <Menu size={24} strokeWidth={2.4} />
             </button>
-            {showCats && (
-              <div
-                id={categoriesMenuId}
-                role="menu"
-                className="absolute left-0 top-full z-50 mt-3 grid w-64 grid-cols-2 gap-1 rounded-2xl border border-[#2C2B42] bg-[#202033] p-2 shadow-2xl shadow-black/40"
-              >
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.slug}
-                    href={`/categories/${cat.slug}`}
-                    onClick={() => setShowCats(false)}
-                    role="menuitem"
-                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-[#D8D8E8] transition-colors hover:bg-white/10 hover:text-white"
-                  >
-                    <GameIcon type={cat.slug} size={15} />
-                    {cat.name}
-                  </Link>
-                ))}
-                <Link
-                  href="/categories"
-                  onClick={() => setShowCats(false)}
-                  role="menuitem"
-                  className="col-span-2 rounded-xl px-3 py-2 text-center text-xs font-bold text-[#9B8CFF] transition-colors hover:bg-[#6C5CFF]/10"
-                >
-                  All categories
-                </Link>
-              </div>
-            )}
           </div>
 
           <Link href="/" className="relative h-10 w-[135px] shrink-0 sm:w-[155px]" aria-label="YoPlayables home">
@@ -172,7 +149,6 @@ export default function Navbar({ categories = [] }: { categories?: Category[] })
             <IconButton
               label="Notifications"
               onClick={() => {
-                setShowCats(false);
                 setShowLibrary(false);
                 setShowUser(false);
                 setShowNotifications((value) => !value);
@@ -188,7 +164,6 @@ export default function Navbar({ categories = [] }: { categories?: Category[] })
             <IconButton
               label="Liked and recent games"
               onClick={() => {
-                setShowCats(false);
                 setShowNotifications(false);
                 setShowUser(false);
                 setShowLibrary((value) => !value);
@@ -209,7 +184,6 @@ export default function Navbar({ categories = [] }: { categories?: Category[] })
             <div className="relative">
               <button
                 onClick={() => {
-                  setShowCats(false);
                   setShowNotifications(false);
                   setShowLibrary(false);
                   setShowUser((v) => !v);

@@ -1,6 +1,7 @@
 export type UserRole = 'user' | 'admin';
 export type GameType = 'iframe' | 'hosted';
 export type GameStatus = 'draft' | 'published' | 'archived';
+export type GameReactionType = 'like' | 'dislike';
 
 export interface Profile {
   id: string;
@@ -60,6 +61,17 @@ export interface Rating {
   game_id: string;
   user_id: string;
   score: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GameReaction {
+  id: string;
+  game_id: string;
+  user_id: string | null;
+  visitor_id: string | null;
+  voter_key: string;
+  reaction: GameReactionType;
   created_at: string;
   updated_at: string;
 }
