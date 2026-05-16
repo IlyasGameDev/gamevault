@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import FeaturedCarousel from '@/components/games/FeaturedCarousel';
 import GameGrid from '@/components/games/GameGrid';
 import AllGamesSection from '@/components/games/AllGamesSection';
@@ -20,6 +21,24 @@ const HOMEPAGE_CHIPS: HomepageChip[] = [
   { label: 'New', href: '/games?sort=newest', icon: 'new' },
 ];
 
+export const metadata: Metadata = {
+  title: { absolute: 'YoPlayables - Play Free Online Browser Games' },
+  description: 'Play free online games on YoPlayables. Enjoy WebGL and HTML5 browser games instantly with no download on desktop, tablet, and mobile.',
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'YoPlayables - Play Free Online Browser Games',
+    description: 'Play free online games on YoPlayables. Enjoy WebGL and HTML5 browser games instantly with no download on desktop, tablet, and mobile.',
+    url: '/',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'YoPlayables - Play Free Online Browser Games',
+    description: 'Play free online games on YoPlayables. Enjoy WebGL and HTML5 browser games instantly with no download on desktop, tablet, and mobile.',
+  },
+};
+
 export const revalidate = 300;
 
 export default async function HomePage() {
@@ -39,6 +58,18 @@ export default async function HomePage() {
   return (
     <main className="mx-auto max-w-7xl space-y-12 px-4 py-6 sm:px-6 sm:py-8">
       {heroGames.length > 0 && <FeaturedCarousel games={heroGames} />}
+
+      <section className="rounded-3xl border border-[#262626] bg-[#161616] px-5 py-6 sm:px-8 sm:py-8">
+        <div className="max-w-4xl space-y-4">
+          <h1 className="text-3xl font-black text-white sm:text-4xl">Play Free Online Games on YoPlayables</h1>
+          <p className="text-base leading-7 text-[#D8D8D8] sm:text-lg">
+            YoPlayables is a free browser games platform where you can play HTML5 and WebGL games instantly without downloads. Discover action, racing, puzzle, arcade, shooting, sports, multiplayer, and casual games that work on desktop, tablet, and mobile.
+          </p>
+          <p className="text-base leading-7 text-[#B8B8B8] sm:text-lg">
+            Choose a game, click play, and start instantly. New games are added regularly, including trending browser games, mobile-friendly games, and quick games for short play sessions.
+          </p>
+        </div>
+      </section>
 
       <nav className="flex gap-2 overflow-x-auto pb-1">
         {homepageChips.map((chip) => (

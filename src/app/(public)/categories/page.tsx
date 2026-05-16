@@ -1,8 +1,15 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { getCategoriesWithPublishedGames } from '@/lib/categories';
 import GameIcon from '@/components/ui/GameIcon';
 
-export const metadata = { title: 'Categories — YoPlayables' };
+export const metadata: Metadata = {
+  title: 'Browse Game Categories',
+  description: 'Browse game categories on YoPlayables and discover free browser games across action, puzzle, racing, sports, multiplayer, and more.',
+  alternates: {
+    canonical: '/categories',
+  },
+};
 export const revalidate = 3600;
 
 export default async function CategoriesPage() {

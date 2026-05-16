@@ -5,6 +5,7 @@ import { ChevronRight } from 'lucide-react';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { Category, GameWithCategories } from '@/lib/types/database';
 import GameGrid from '@/components/games/GameGrid';
+import { getCategorySeo } from '@/lib/seo';
 
 export const revalidate = 3600;
 
@@ -33,17 +34,37 @@ async function getCategoryGames(categoryId: string): Promise<GameWithCategories[
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const cat = await getCategory(slug);
-  return cat ? { title: `${cat.name} Games — YoPlayables` } : {};
+  if (!cat) return {};
+
+  const seo = getCategorySeo(cat);
+
+  return {
+    title: seo.title,
+    description: seo.description,
+    alternates: {
+      canonical: `/categories/${cat.slug}`,
+    },
+    openGraph: {
+      title: seo.title,
+      description: seo.description,
+      url: `/categories/${cat.slug}`,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: seo.title,
+      description: seo.description,
+    },
+  };
 }
 
 export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
-  const [cat, games] = await Promise.all([getCategory(slug), (async () => {
-    const c = await getCategory(slug);
-    return c ? getCategoryGames(c.id) : [];
-  })()]);
+  const cat = await getCategory(slug);
 
   if (!cat) notFound();
+
+  const games = await getCategoryGames(cat.id);
+  const seo = getCategorySeo(cat);
 
   return (
     <main className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6">
@@ -57,14 +78,20 @@ export default async function CategoryPage({ params }: Props) {
 
       <div className="flex items-center gap-4">
         <span className="text-5xl">{cat.icon}</span>
-        <div>
-          <h1 className="text-3xl font-extrabold text-white">{cat.name}</h1>
-          <p className="mt-1 text-[#A8A8A8]">{games.length} games</p>
-          {cat.description && <p className="mt-1 text-sm text-[#D8D8D8]">{cat.description}</p>}
+        <div className="max-w-4xl space-y-3">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#A996FF]">{cat.name} category</p>
+          <h1 className="text-3xl font-extrabold text-white sm:text-4xl">{seo.title}</h1>
+          <p className="text-[#A8A8A8]">{games.length} games</p>
+          <p className="text-base leading-7 text-[#D8D8D8]">{seo.intro}</p>
+          <p className="text-base leading-7 text-[#B9B9C8]">{seo.secondary}</p>
+          {cat.description && <p className="text-sm text-[#A8A8A8]">{cat.description}</p>}
         </div>
       </div>
 
-      <GameGrid games={games} />
+      <section className="space-y-4">
+        <h2 className="text-2xl font-extrabold text-white">Top {cat.name} Games</h2>
+        <GameGrid games={games} />
+      </section>
     </main>
   );
 }

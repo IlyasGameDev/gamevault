@@ -11,11 +11,22 @@ const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL
   : undefined;
 
 export const metadata: Metadata = {
-  title: { default: SITE_NAME, template: `%s — ${SITE_NAME}` },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     type: 'website',
     siteName: SITE_NAME,
+    url: '/',
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_NAME,
     description: SITE_DESCRIPTION,
   },
 };

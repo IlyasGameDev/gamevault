@@ -8,11 +8,12 @@ import BackToGameButton from '@/components/games/BackToGameButton';
 import GameComments from '@/components/games/GameComments';
 import GameActions from '@/components/games/GameActions';
 import GameGrid from '@/components/games/GameGrid';
-import { SITE_NAME } from '@/lib/constants';
+import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ExternalLink, Gamepad2 } from 'lucide-react';
 import { formatNumber } from '@/lib/utils';
+import { getGameSeo } from '@/lib/seo';
 
 export const revalidate = 3600;
 
@@ -61,10 +62,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const game = await getGame(slug);
   if (!game) return { title: 'Game Not Found' };
+  const seo = getGameSeo(game);
+
   return {
-    title: `${game.title} — ${SITE_NAME}`,
-    description: game.description ?? `Play ${game.title} for free on ${SITE_NAME}`,
+    title: seo.title,
+    description: seo.description,
+    alternates: {
+      canonical: `/games/${game.slug}`,
+    },
     openGraph: {
+      title: seo.title,
+      description: seo.description,
+      url: `/games/${game.slug}`,
+      images: game.thumbnail_url ? [game.thumbnail_url] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: seo.title,
+      description: seo.description,
       images: game.thumbnail_url ? [game.thumbnail_url] : [],
     },
   };
@@ -76,15 +91,24 @@ export default async function GamePage({ params }: Props) {
   if (!game) notFound();
 
   const related = await getRelated(game);
+  const seo = getGameSeo(game);
 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'VideoGame',
     name: game.title,
-    description: game.description ?? undefined,
+    url: `${SITE_URL}/games/${game.slug}`,
     image: game.thumbnail_url ?? undefined,
+    description: seo.description,
     author: game.developer ? { '@type': 'Organization', name: game.developer } : undefined,
     genre: game.categories.map((c) => c.name),
+    gamePlatform: 'Web browser',
+    operatingSystem: 'Web browser',
+    applicationCategory: 'Game',
+    publisher: {
+      '@type': 'Organization',
+      name: SITE_NAME,
+    },
     aggregateRating: game.rating_count > 0 ? {
       '@type': 'AggregateRating',
       ratingValue: game.rating_avg,
@@ -93,10 +117,36 @@ export default async function GamePage({ params }: Props) {
       worstRating: 1,
     } : undefined,
   };
+  const primaryCategory = game.categories[0];
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Games',
+        item: `${SITE_URL}/games`,
+      },
+      ...(primaryCategory ? [{
+        '@type': 'ListItem',
+        position: 2,
+        name: primaryCategory.name,
+        item: `${SITE_URL}/categories/${primaryCategory.slug}`,
+      }] : []),
+      {
+        '@type': 'ListItem',
+        position: primaryCategory ? 3 : 2,
+        name: game.title,
+        item: `${SITE_URL}/games/${game.slug}`,
+      },
+    ],
+  };
 
   return (
     <main className="min-h-screen bg-[#10101B]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
 
       <div className="mx-auto max-w-[1580px] space-y-5 px-3 py-3 sm:px-4 sm:py-4">
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
@@ -118,8 +168,8 @@ export default async function GamePage({ params }: Props) {
           )}
         </div>
 
-        <GameSummaryPanel game={game} />
-        <GameDescriptionPanel game={game} />
+        <GameSummaryPanel game={game} seo={seo} />
+        <GameDescriptionPanel seo={seo} />
 
         {related.length > 0 && (
           <section className="space-y-3 xl:hidden">
@@ -137,7 +187,7 @@ export default async function GamePage({ params }: Props) {
   );
 }
 
-function GameSummaryPanel({ game }: { game: GameWithCategories }) {
+function GameSummaryPanel({ game, seo }: { game: GameWithCategories; seo: ReturnType<typeof getGameSeo> }) {
   const tags = uniqueLabels([
     ...game.categories.map((category) => category.name),
     ...game.tags,
@@ -159,8 +209,9 @@ function GameSummaryPanel({ game }: { game: GameWithCategories }) {
         </nav>
 
         <div className="space-y-4">
-          <h2 className="text-3xl font-black text-white sm:text-4xl">{game.title}</h2>
+          <h1 className="text-3xl font-black text-white sm:text-4xl">{seo.h1}</h1>
           <GameActions game={game} variant="share" />
+          <p className="max-w-4xl text-base leading-7 text-[#CAC7DA] sm:text-lg">{seo.intro}</p>
         </div>
 
         <dl className="space-y-3 text-base sm:text-lg">
@@ -209,20 +260,42 @@ function GameSummaryPanel({ game }: { game: GameWithCategories }) {
   );
 }
 
-function GameDescriptionPanel({ game }: { game: GameWithCategories }) {
-  if (!game.description && !game.instructions) return null;
-
+function GameDescriptionPanel({ seo }: { seo: ReturnType<typeof getGameSeo> }) {
   return (
     <section className="space-y-6 rounded-lg border border-[#24243A] bg-[#151522] p-5 text-[#B8B6C9] sm:p-7">
-      {game.description && <p className="max-w-6xl text-base leading-8 sm:text-lg">{game.description}</p>}
+      <div className="space-y-3">
+        <h2 className="text-2xl font-black text-white">{seo.aboutHeading}</h2>
+        <p className="max-w-6xl text-base leading-8 sm:text-lg">{seo.aboutBody}</p>
+      </div>
 
-      {game.instructions && (
-        <div className="space-y-4">
-          <h2 className="text-2xl font-black text-white">Controls</h2>
-          <p className="whitespace-pre-wrap text-base leading-8 sm:text-lg">{game.instructions}</p>
-        </div>
-      )}
+      <div className="space-y-3">
+        <h2 className="text-2xl font-black text-white">{seo.howToPlayHeading}</h2>
+        <p className="max-w-6xl text-base leading-8 sm:text-lg">{seo.howToPlayBody}</p>
+      </div>
 
+      <div className="space-y-3">
+        <h2 className="text-2xl font-black text-white">{seo.controlsHeading}</h2>
+        <ul className="space-y-2 text-base leading-8 sm:text-lg">
+          {seo.controlItems.map((item) => (
+            <li key={item} className="flex gap-3">
+              <span className="mt-3 h-2 w-2 shrink-0 rounded-full bg-[#A996FF]" aria-hidden="true" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-2xl font-black text-white">{seo.whyHeading}</h2>
+        <ul className="space-y-2 text-base leading-8 sm:text-lg">
+          {seo.whyPlayItems.map((item) => (
+            <li key={item} className="flex gap-3">
+              <span className="mt-3 h-2 w-2 shrink-0 rounded-full bg-[#A996FF]" aria-hidden="true" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }

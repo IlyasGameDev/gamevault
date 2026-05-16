@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import LoginForm from '@/components/auth/LoginForm';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Sign In — YoPlayables' };
+export const metadata = { title: 'Sign In' };
 
 export default function LoginPage() {
   return (

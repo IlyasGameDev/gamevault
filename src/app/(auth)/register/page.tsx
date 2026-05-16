@@ -1,7 +1,7 @@
 import RegisterForm from '@/components/auth/RegisterForm';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Create Account — YoPlayables' };
+export const metadata = { title: 'Create Account' };
 
 export default function RegisterPage() {
   return (

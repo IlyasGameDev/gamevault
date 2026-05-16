@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { SITE_URL } from '@/lib/constants';
+import { LANDING_PAGE_CONFIGS } from '@/lib/seo';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { data: games } = await supabaseAdmin
@@ -25,11 +26,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
+  const landingRoutes = Object.values(LANDING_PAGE_CONFIGS).map((landingPage) => ({
+    url: `${SITE_URL}/${landingPage.slug}`,
+    changeFrequency: 'weekly' as const,
+    priority: 0.7,
+  }));
+
   return [
     { url: SITE_URL, changeFrequency: 'daily', priority: 1 },
     { url: `${SITE_URL}/games`, changeFrequency: 'daily', priority: 0.9 },
     { url: `${SITE_URL}/categories`, changeFrequency: 'weekly', priority: 0.7 },
     ...gameRoutes,
     ...categoryRoutes,
+    ...landingRoutes,
   ];
 }
