@@ -17,3 +17,4 @@ export type SortOption = typeof SORT_OPTIONS[number]['value'];
 export const DEFAULT_GAME_WIDTH = 960;
 export const DEFAULT_GAME_HEIGHT = 640;
 export const MAX_UPLOAD_SIZE_MB = 50;
+export const MAX_AVATAR_SIZE_MB = 2;

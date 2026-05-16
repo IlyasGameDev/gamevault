@@ -8,6 +8,7 @@ import { GameWithCategories } from '@/lib/types/database';
 import GameGrid from '@/components/games/GameGrid';
 import GameCard from '@/components/games/GameCard';
 import { formatDate } from '@/lib/utils';
+import { MAX_AVATAR_SIZE_MB } from '@/lib/constants';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import { Star, Camera } from 'lucide-react';
@@ -92,8 +93,8 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('Avatar must be under 2MB');
+    if (file.size > MAX_AVATAR_SIZE_MB * 1024 * 1024) {
+      toast.error(`Avatar must be under ${MAX_AVATAR_SIZE_MB}MB`);
       return;
     }
     if (!file.type.startsWith('image/')) {
@@ -103,29 +104,26 @@ export default function ProfilePage() {
 
     setAvatarUploading(true);
     try {
-      const ext = file.name.split('.').pop();
-      const path = `avatars/${user.id}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from('games')
-        .upload(path, file, { upsert: true, contentType: file.type });
+      const formData = new FormData();
+      formData.append('file', file);
 
-      if (uploadError) throw uploadError;
+      const response = await fetch('/api/profile/avatar', {
+        method: 'POST',
+        body: formData,
+      });
+      const payload = (await response.json()) as { data?: { avatarUrl?: string }; error?: string };
 
-      const { data: { publicUrl } } = supabase.storage.from('games').getPublicUrl(path);
+      if (!response.ok || !payload.data?.avatarUrl) {
+        throw new Error(payload.error ?? 'Failed to upload avatar');
+      }
 
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ avatar_url: publicUrl })
-        .eq('id', user.id);
-
-      if (updateError) throw updateError;
-
-      setAvatarUrl(publicUrl);
+      setAvatarUrl(payload.data.avatarUrl);
       toast.success('Avatar updated!');
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Failed to upload avatar');
     } finally {
       setAvatarUploading(false);
+      e.target.value = '';
     }
   }
 
