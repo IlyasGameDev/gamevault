@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "gamevault-umber.vercel.app"
+        }
+      ],
+      "destination": "https://www.yoplayables.com/:path*",
+      "permanent": true
+    }
+  ]
+}

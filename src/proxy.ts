@@ -1,11 +1,11 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import { getConfiguredSiteUrl, shouldRedirectToCanonicalHost } from '@/lib/siteUrl';
+import { getProductionSiteUrl, shouldRedirectToCanonicalHost } from '@/lib/siteUrl';
 
 export async function proxy(request: NextRequest) {
   const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? '';
   if (shouldRedirectToCanonicalHost(host)) {
-    const redirectUrl = new URL(request.nextUrl.pathname + request.nextUrl.search, getConfiguredSiteUrl());
+    const redirectUrl = new URL(request.nextUrl.pathname + request.nextUrl.search, getProductionSiteUrl());
     return NextResponse.redirect(redirectUrl, 308);
   }
 

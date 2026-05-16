@@ -8,7 +8,7 @@ import {
   type OAuthProvider,
   type OAuthProviderAvailability,
 } from '@/lib/authProviders';
-import { getConfiguredSiteUrl } from '@/lib/siteUrl';
+import { getConfiguredSiteUrl, getProductionSiteUrl } from '@/lib/siteUrl';
 import toast from 'react-hot-toast';
 
 export default function OAuthButtons({
@@ -54,9 +54,12 @@ export default function OAuthButtons({
 
     setLoadingProvider(provider);
 
-    const baseUrl = getConfiguredSiteUrl().startsWith('http://localhost')
-      ? window.location.origin
-      : getConfiguredSiteUrl();
+    const configuredSiteUrl = getConfiguredSiteUrl();
+    const baseUrl = window.location.hostname.endsWith('.vercel.app')
+      ? getProductionSiteUrl()
+      : configuredSiteUrl.startsWith('http://localhost')
+        ? window.location.origin
+        : configuredSiteUrl;
 
     const { error, data } = await supabase.auth.signInWithOAuth({
       provider,
