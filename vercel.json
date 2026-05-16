@@ -1,6 +1,11 @@
 {
   "redirects": [
     {
+      "source": "/Ads.txt",
+      "destination": "/ads.txt",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         {
