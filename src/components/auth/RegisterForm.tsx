@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { registerSchema } from '@/lib/validations';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import OAuthButtons from '@/components/auth/OAuthButtons';
 import toast from 'react-hot-toast';
 import { SITE_NAME } from '@/lib/constants';
 
@@ -46,6 +47,7 @@ export default function RegisterForm() {
         <h1 className="text-2xl font-extrabold text-white">Create account</h1>
         <p className="mt-1 text-sm text-[#A8A8A8]">Join {SITE_NAME} and start playing</p>
       </div>
+      <OAuthButtons />
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           id="username" label="Username" placeholder="coolplayer123"

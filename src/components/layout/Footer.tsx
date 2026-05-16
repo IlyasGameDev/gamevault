@@ -16,12 +16,9 @@ export default function Footer() {
             />
           </Link>
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm font-medium text-[#A8A8A8]">
-            <a href="#" className="transition-colors hover:text-white">About</a>
-            <a href="#" className="transition-colors hover:text-white">Privacy Policy</a>
-            <a href="#" className="transition-colors hover:text-white">Terms</a>
-            <a href="#" className="transition-colors hover:text-white">Contact</a>
-            <a href="#" className="transition-colors hover:text-white">Submit Game</a>
-            <Link href="/categories" className="transition-colors hover:text-white">Categories</Link>
+            <Link href="/about" className="transition-colors hover:text-white">About</Link>
+            <Link href="/privacy-policy" className="transition-colors hover:text-white">Privacy Policy</Link>
+            <Link href="/terms-of-service" className="transition-colors hover:text-white">Terms of Service</Link>
           </nav>
           <p className="text-xs text-[#777]">
             Free browser games, built for instant play.
