@@ -1,9 +1,7 @@
 import Script from 'next/script';
 
-const DEFAULT_CLARITY_PROJECT_ID = 'ws164cwp7u';
-
 export default function MicrosoftClarity() {
-  const projectId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID || DEFAULT_CLARITY_PROJECT_ID;
+  const projectId = process.env.CLARITY_PROJECT_ID;
 
   if (!projectId) return null;
 
