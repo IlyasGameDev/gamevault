@@ -218,7 +218,7 @@ export default function GamePlayer({ game }: GamePlayerProps) {
               </div>
             )}
           </div>
-          <h1 className="truncate text-base font-black text-white sm:text-lg">{game.title}</h1>
+          <p className="truncate text-base font-black text-white sm:text-lg">{game.title}</p>
         </Link>
         <div className="min-w-0 overflow-x-auto">
           <GameActions

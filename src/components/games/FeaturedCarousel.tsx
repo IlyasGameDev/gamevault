@@ -71,9 +71,15 @@ function GameTile({
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             {isLarge && <p className="mb-1 text-xs font-bold uppercase text-[#9B8CFF]">Featured</p>}
-            <h1 className={`${isLarge ? 'text-2xl sm:text-3xl' : 'text-sm sm:text-base'} truncate font-extrabold text-white`}>
-              {game.title}
-            </h1>
+            {isLarge ? (
+              <h2 className="truncate text-2xl font-extrabold text-white sm:text-3xl">
+                {game.title}
+              </h2>
+            ) : (
+              <h3 className="truncate text-sm font-extrabold text-white sm:text-base">
+                {game.title}
+              </h3>
+            )}
           </div>
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#6C5CFF] text-white opacity-0 transition-opacity group-hover:opacity-100">
             <Play size={17} fill="white" />
