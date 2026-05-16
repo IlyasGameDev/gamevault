@@ -101,30 +101,40 @@ function BrowseContent() {
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <h1 className="text-2xl font-extrabold text-white">
-          Browse Games
-          {total > 0 && <span className="ml-2 text-base font-normal text-[#A8A8A8]">({total.toLocaleString()} games)</span>}
-        </h1>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A8A8A8]" size={14} />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search..."
-              className="w-48 rounded-full border border-[#2A2A2A] bg-[#1A1A1A] py-2 pl-9 pr-4 text-sm text-white outline-none placeholder:text-[#777] focus:border-[#6C5CFF]"
-            />
+      <section className="space-y-4 rounded-3xl border border-[#252525] bg-[#161616] px-5 py-6 sm:px-7 sm:py-7">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-extrabold text-white sm:text-3xl">
+              Browse Free Online Games
+              {total > 0 && <span className="ml-2 text-base font-normal text-[#A8A8A8]">({total.toLocaleString()} games)</span>}
+            </h1>
+            <p className="max-w-4xl text-base leading-7 text-[#D8D8D8]">
+              Explore free online games on YoPlayables across action, puzzle, racing, sports, arcade, and multiplayer categories. Every game runs directly in your browser, so you can jump in quickly on desktop, tablet, or mobile without downloading anything.
+            </p>
+            <p className="max-w-4xl text-base leading-7 text-[#B9B9C8]">
+              Use the filters below to sort by popularity, rating, or newest releases, then discover quick-play browser games that are easy to start and simple to share.
+            </p>
           </div>
-          <select
-            value={sort}
-            onChange={(e) => setParam('sort', e.target.value)}
-            className="rounded-full border border-[#2A2A2A] bg-[#1A1A1A] px-3 py-2 text-sm text-gray-300 outline-none focus:border-[#6C5CFF]"
-          >
-            {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A8A8A8]" size={14} />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search..."
+                className="w-48 rounded-full border border-[#2A2A2A] bg-[#1A1A1A] py-2 pl-9 pr-4 text-sm text-white outline-none placeholder:text-[#777] focus:border-[#6C5CFF]"
+              />
+            </div>
+            <select
+              value={sort}
+              onChange={(e) => setParam('sort', e.target.value)}
+              className="rounded-full border border-[#2A2A2A] bg-[#1A1A1A] px-3 py-2 text-sm text-gray-300 outline-none focus:border-[#6C5CFF]"
+            >
+              {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
         </div>
-      </div>
+      </section>
 
       <CategoryFilter />
       <GameGrid games={games} loading={loading} />
