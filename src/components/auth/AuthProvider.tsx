@@ -9,6 +9,7 @@ interface AuthContextValue {
   profile: Profile | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<Profile | null>;
   isAdmin: boolean;
 }
 
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextValue>({
   profile: null,
   loading: true,
   signOut: async () => {},
+  refreshProfile: async () => null,
   isAdmin: false,
 });
 

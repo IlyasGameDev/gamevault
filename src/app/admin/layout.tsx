@@ -3,8 +3,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Gamepad2, LayoutDashboard, Tags, MessageSquare, Users, ExternalLink, Menu, X, Shield, LogOut, CloudDownload } from 'lucide-react';
+import { useAuthContext } from '@/components/auth/AuthProvider';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/hooks/useAuth';
 import { SITE_NAME } from '@/lib/constants';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
@@ -20,7 +20,7 @@ const NAV = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { profile, signOut } = useAuth();
+  const { profile, signOut } = useAuthContext();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -30,7 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push('/');
   }
 
-  const NavLinks = () => (
+  const navLinks = (
     <nav className="flex-1 p-4 space-y-1">
       {NAV.map(({ href, label, icon: Icon }) => {
         const active = href === '/admin' ? pathname === '/admin' : pathname.startsWith(href);
@@ -62,7 +62,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {SITE_NAME} Admin
           </Link>
         </div>
-        <NavLinks />
+        {navLinks}
         <div className="p-4 border-t border-white/10 space-y-2">
           <Link href="/" target="_blank" className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-300 transition-colors">
             <ExternalLink size={12} /> View site
@@ -86,7 +86,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <X size={20} />
               </button>
             </div>
-            <NavLinks />
+            {navLinks}
           </aside>
         </div>
       )}

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { AuthProvider } from '@/components/auth/AuthProvider';
 import ToastProvider from '@/components/ui/Toast';
 import { SITE_NAME, SITE_DESCRIPTION } from '@/lib/constants';
 
@@ -27,8 +28,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://img.gamemonetize.com" />
       </head>
       <body className="min-h-full flex flex-col bg-[#0F0F0F] text-white antialiased">
-        <ToastProvider />
-        <div className="flex-1">{children}</div>
+        <AuthProvider>
+          <ToastProvider />
+          <div className="flex-1">{children}</div>
+        </AuthProvider>
       </body>
     </html>
   );

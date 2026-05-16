@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { Star } from 'lucide-react';
+import { useAuthContext } from '@/components/auth/AuthProvider';
 import { Game } from '@/lib/types/database';
-import { useAuth } from '@/hooks/useAuth';
 import toast from 'react-hot-toast';
 
 interface GameRatingProps {
@@ -11,7 +11,7 @@ interface GameRatingProps {
 }
 
 export default function GameRating({ game, userRating: initialRating }: GameRatingProps) {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [hover, setHover] = useState(0);
   const [rating, setRating] = useState(initialRating ?? 0);
   const [submitting, setSubmitting] = useState(false);

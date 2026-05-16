@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Bell, Clock3, Heart, LogOut, Menu, Search, Shield, User, X } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/components/auth/AuthProvider';
 import { createClient } from '@/lib/supabase/client';
 import { Category, Game } from '@/lib/types/database';
 import toast from 'react-hot-toast';
@@ -19,7 +19,7 @@ export default function Navbar({
   sidebarExpanded?: boolean;
   onToggleSidebar?: () => void;
 }) {
-  const { user, profile, signOut, isAdmin } = useAuth();
+  const { user, profile, signOut, isAdmin } = useAuthContext();
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [search, setSearch] = useState('');

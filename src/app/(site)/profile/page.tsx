@@ -1,8 +1,8 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/components/auth/AuthProvider';
 import { createClient } from '@/lib/supabase/client';
 import { GameWithCategories } from '@/lib/types/database';
 import GameGrid from '@/components/games/GameGrid';
@@ -21,9 +21,9 @@ interface RatedGame extends GameWithCategories {
 type Tab = 'favorites' | 'history' | 'ratings';
 
 export default function ProfilePage() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, refreshProfile } = useAuthContext();
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [tab, setTab] = useState<Tab>('favorites');
@@ -37,7 +37,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!loading && !user) router.push('/login');
-  }, [user, loading]);
+  }, [loading, router, user]);
 
   useEffect(() => {
     if (profile) {
@@ -87,7 +87,7 @@ export default function ProfilePage() {
       setGamesLoading(false);
     }
     load();
-  }, [tab, user]);
+  }, [supabase, tab, user]);
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -118,6 +118,7 @@ export default function ProfilePage() {
       }
 
       setAvatarUrl(payload.data.avatarUrl);
+      await refreshProfile();
       toast.success('Avatar updated!');
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Failed to upload avatar');
@@ -135,7 +136,10 @@ export default function ProfilePage() {
       .update({ display_name: displayName.trim() })
       .eq('id', user.id);
     if (error) toast.error('Failed to save');
-    else toast.success('Profile updated!');
+    else {
+      await refreshProfile();
+      toast.success('Profile updated!');
+    }
     setSaving(false);
   }
 
