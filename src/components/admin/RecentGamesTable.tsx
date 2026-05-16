@@ -37,7 +37,7 @@ export default function RecentGamesTable({ games }: RecentGamesTableProps) {
                 <div className="flex items-center gap-3">
                   <div className="relative w-10 h-7 rounded overflow-hidden bg-white/5 shrink-0">
                     {game.thumbnail_url && (
-                      <Image src={game.thumbnail_url} alt={game.title} fill className="object-cover" />
+                      <Image src={game.thumbnail_url} alt={game.title} fill unoptimized className="object-cover" />
                     )}
                   </div>
                   <span className="font-medium text-white truncate max-w-[160px]">{game.title}</span>

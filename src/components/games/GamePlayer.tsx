@@ -211,7 +211,14 @@ export default function GamePlayer({ game }: GamePlayerProps) {
         <Link href={`/games/${game.slug}`} className="flex min-w-0 items-center gap-2.5" aria-label={game.title}>
           <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-[#2B2A43]">
             {game.thumbnail_url ? (
-              <Image src={game.thumbnail_url} alt="" fill className="object-cover" sizes="36px" />
+              <Image
+                src={game.thumbnail_url}
+                alt={game.title}
+                fill
+                unoptimized
+                className="object-cover"
+                sizes="36px"
+              />
             ) : (
               <div className="flex h-full w-full items-center justify-center">
                 <Gamepad2 size={18} className="text-[#9B8CFF]" />

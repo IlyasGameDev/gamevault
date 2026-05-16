@@ -20,7 +20,7 @@ export default function GameCard({ game }: GameCardProps) {
             src={game.thumbnail_url}
             alt={game.title}
             fill
-            quality={65}
+            unoptimized
             className="object-cover transition-transform duration-300 group-hover:scale-105"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
           />

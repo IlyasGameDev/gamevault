@@ -258,7 +258,7 @@ export default function AdminGamesPage() {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <div className="relative w-12 h-8 rounded bg-white/5 overflow-hidden shrink-0">
-                          {game.thumbnail_url && <Image src={game.thumbnail_url} alt={game.title} fill className="object-cover" />}
+                          {game.thumbnail_url && <Image src={game.thumbnail_url} alt={game.title} fill unoptimized className="object-cover" />}
                         </div>
                         <div>
                           <p className="font-medium text-white truncate max-w-[180px]">{game.title}</p>

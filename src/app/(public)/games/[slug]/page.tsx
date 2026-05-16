@@ -328,8 +328,9 @@ function PlayNextCard({ game }: { game: GameWithCategories }) {
       {game.thumbnail_url ? (
         <Image
           src={game.thumbnail_url}
-          alt=""
+          alt={game.title}
           fill
+          unoptimized
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           sizes="170px"
         />

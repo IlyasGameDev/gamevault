@@ -36,6 +36,8 @@ function GameTile({
   size?: 'large' | 'small';
 }) {
   const isLarge = size === 'large';
+  const imageSrc = game.cover_url ?? game.thumbnail_url;
+  const isThumbnailImage = !game.cover_url && Boolean(game.thumbnail_url);
 
   return (
     <Link
@@ -44,14 +46,15 @@ function GameTile({
         isLarge ? 'min-h-[280px] sm:min-h-[360px] lg:min-h-[430px]' : 'min-h-[135px] sm:min-h-[205px]'
       }`}
     >
-      {game.thumbnail_url || game.cover_url ? (
+      {imageSrc ? (
         <Image
-          src={game.cover_url ?? game.thumbnail_url!}
+          src={imageSrc}
           alt={game.title}
           fill
           priority={priority}
           fetchPriority={priority ? 'high' : undefined}
           quality={priority ? 75 : 65}
+          unoptimized={isThumbnailImage}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           sizes={isLarge ? '(max-width: 1024px) 100vw, 60vw' : '(max-width: 1024px) 50vw, 20vw'}
         />

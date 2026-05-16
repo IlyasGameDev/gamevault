@@ -366,7 +366,14 @@ function GameListSection({
             <Link key={game.id} href={`/games/${game.slug}`} className="flex items-center gap-3 rounded-2xl p-2 transition-colors hover:bg-white/10">
               <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-xl bg-[#151522]">
                 {game.thumbnail_url ? (
-                  <Image src={game.thumbnail_url} alt="" fill className="object-cover" sizes="64px" />
+                  <Image
+                    src={game.thumbnail_url}
+                    alt={game.title}
+                    fill
+                    unoptimized
+                    className="object-cover"
+                    sizes="64px"
+                  />
                 ) : (
                   <Image src="/maskot.png" alt="" fill className="object-cover" sizes="64px" />
                 )}
