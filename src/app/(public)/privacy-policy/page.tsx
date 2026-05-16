@@ -40,7 +40,7 @@ export default function PrivacyPolicyPage() {
       <section>
         <h2 className="text-xl font-bold text-white">Third-party services</h2>
         <p className="mt-3">
-          Some games, embeds, analytics tools, or infrastructure providers may process limited information as part of delivering content through the site. Their handling of data is governed by their own policies.
+          Some games, embeds, analytics tools, or infrastructure providers may process limited information as part of delivering content through the site. This may include services such as Vercel Analytics and Microsoft Clarity, which help us understand site performance, usage patterns, and user experience issues. Their handling of data is governed by their own policies.
         </p>
       </section>
 

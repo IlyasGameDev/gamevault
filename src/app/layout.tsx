@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import ToastProvider from '@/components/ui/Toast';
+import MicrosoftClarity from '@/components/analytics/MicrosoftClarity';
 import { SITE_NAME, SITE_DESCRIPTION } from '@/lib/constants';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -43,6 +45,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ToastProvider />
           <div className="flex-1">{children}</div>
         </AuthProvider>
+        <Analytics />
+        <MicrosoftClarity />
       </body>
     </html>
   );
