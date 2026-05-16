@@ -1,6 +1,8 @@
+import { getConfiguredSiteUrl } from '@/lib/siteUrl';
+
 export const SITE_NAME = 'YoPlayables';
 export const SITE_DESCRIPTION = 'Play free WebGL and browser games instantly. No downloads, no installs.';
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+export const SITE_URL = getConfiguredSiteUrl();
 
 export const GAMES_PER_PAGE = 24;
 export const COMMENTS_PER_PAGE = 20;

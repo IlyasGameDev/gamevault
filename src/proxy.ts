@@ -1,7 +1,14 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { getConfiguredSiteUrl, shouldRedirectToCanonicalHost } from '@/lib/siteUrl';
 
 export async function proxy(request: NextRequest) {
+  const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? '';
+  if (shouldRedirectToCanonicalHost(host)) {
+    const redirectUrl = new URL(request.nextUrl.pathname + request.nextUrl.search, getConfiguredSiteUrl());
+    return NextResponse.redirect(redirectUrl, 308);
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -48,5 +55,9 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/profile/:path*'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|ads.txt|api).*)',
+    '/admin/:path*',
+    '/profile/:path*',
+  ],
 };

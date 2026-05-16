@@ -8,6 +8,7 @@ import {
   type OAuthProvider,
   type OAuthProviderAvailability,
 } from '@/lib/authProviders';
+import { getConfiguredSiteUrl } from '@/lib/siteUrl';
 import toast from 'react-hot-toast';
 
 export default function OAuthButtons({
@@ -53,9 +54,13 @@ export default function OAuthButtons({
 
     setLoadingProvider(provider);
 
+    const baseUrl = getConfiguredSiteUrl().startsWith('http://localhost')
+      ? window.location.origin
+      : getConfiguredSiteUrl();
+
     const { error, data } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/callback?next=${redirectTo}` },
+      options: { redirectTo: `${baseUrl}/callback?next=${redirectTo}` },
     });
 
     if (error) {
