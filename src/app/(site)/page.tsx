@@ -1,12 +1,12 @@
 import Link from 'next/link';
-import { supabaseAdmin } from '@/lib/supabase/admin';
+import { Suspense } from 'react';
 import FeaturedCarousel from '@/components/games/FeaturedCarousel';
 import GameGrid from '@/components/games/GameGrid';
 import AllGamesSection from '@/components/games/AllGamesSection';
-import { GameWithCategories } from '@/lib/types/database';
 import { ChevronRight } from 'lucide-react';
 import GameIcon, { GameIconType } from '@/components/ui/GameIcon';
 import { getCategoriesWithPublishedGames } from '@/lib/categories';
+import { getFeaturedGames, getHomepageGames } from '@/lib/games';
 
 type HomepageChip = {
   label: string;
@@ -20,44 +20,12 @@ const HOMEPAGE_CHIPS: HomepageChip[] = [
   { label: 'New', href: '/games?sort=newest', icon: 'new' },
 ];
 
-async function getFeatured(): Promise<GameWithCategories[]> {
-  const { data } = await supabaseAdmin
-    .from('games')
-    .select('*, categories:game_categories(category:categories(*))')
-    .eq('status', 'published')
-    .eq('is_featured', true)
-    .order('updated_at', { ascending: false })
-    .limit(5);
-  return ((data ?? []).map((g: Record<string, unknown>) => ({
-    ...g,
-    categories: ((g.categories as { category: unknown }[]) ?? []).map((gc) => gc.category),
-  }))) as GameWithCategories[];
-}
-
-async function getGames(sort: string, limit: number): Promise<GameWithCategories[]> {
-  let query = supabaseAdmin
-    .from('games')
-    .select('*, categories:game_categories(category:categories(*))')
-    .eq('status', 'published')
-    .limit(limit);
-
-  if (sort === 'popular') query = query.order('play_count', { ascending: false });
-  else if (sort === 'rated') query = query.order('rating_avg', { ascending: false });
-  else query = query.order('published_at', { ascending: false });
-
-  const { data } = await query;
-  return ((data ?? []).map((g: Record<string, unknown>) => ({
-    ...g,
-    categories: ((g.categories as { category: unknown }[]) ?? []).map((gc) => gc.category),
-  }))) as GameWithCategories[];
-}
+export const revalidate = 300;
 
 export default async function HomePage() {
-  const [featured, trending, newest, topRated, categories] = await Promise.all([
-    getFeatured(),
-    getGames('popular', 8),
-    getGames('newest', 8),
-    getGames('rated', 8),
+  const [featured, trending, categories] = await Promise.all([
+    getFeaturedGames(),
+    getHomepageGames('popular', 8),
     getCategoriesWithPublishedGames(),
   ]);
   const heroGames = featured.length > 0 ? featured : trending.slice(0, 4);
@@ -94,7 +62,7 @@ export default async function HomePage() {
         <GameGrid games={trending} />
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-4 [contain-intrinsic-size:520px] [content-visibility:auto]">
         <SectionHeader title="Browse by Category" href="/categories" />
         <div className="flex flex-wrap gap-2">
           {categories.slice(0, 10).map((cat) => (
@@ -110,23 +78,48 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-4 [contain-intrinsic-size:760px] [content-visibility:auto]">
         <SectionHeader title="New Games" href="/games?sort=newest" icon="new" />
-        <GameGrid games={newest} />
+        <Suspense fallback={<GameGrid loading />}>
+          <AsyncGameGrid sort="newest" />
+        </Suspense>
       </section>
 
-      {topRated.length > 0 && (
-        <section className="space-y-4">
-          <SectionHeader title="Popular Games" href="/games?sort=rated" icon="popular" />
-          <GameGrid games={topRated} />
-        </section>
-      )}
+      <Suspense fallback={<PopularGamesFallback />}>
+        <PopularGamesSection />
+      </Suspense>
 
-      <section className="space-y-4">
+      <section className="space-y-4 [contain-intrinsic-size:900px] [content-visibility:auto]">
         <h2 className="text-xl font-extrabold text-white">All Games</h2>
         <AllGamesSection />
       </section>
     </main>
+  );
+}
+
+async function AsyncGameGrid({ sort }: { sort: 'newest' | 'popular' | 'rated' }) {
+  const games = await getHomepageGames(sort, 8);
+  return <GameGrid games={games} />;
+}
+
+async function PopularGamesSection() {
+  const topRated = await getHomepageGames('rated', 8);
+  if (topRated.length === 0) return null;
+
+  return (
+    <section className="space-y-4 [contain-intrinsic-size:760px] [content-visibility:auto]">
+      <SectionHeader title="Popular Games" href="/games?sort=rated" icon="popular" />
+      <GameGrid games={topRated} />
+    </section>
+  );
+}
+
+function PopularGamesFallback() {
+  return (
+    <section className="space-y-4 [contain-intrinsic-size:760px] [content-visibility:auto]">
+      <SectionHeader title="Popular Games" href="/games?sort=rated" icon="popular" />
+      <GameGrid loading />
+    </section>
   );
 }
 

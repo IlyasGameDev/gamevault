@@ -5,6 +5,9 @@ import ToastProvider from '@/components/ui/Toast';
 import { SITE_NAME, SITE_DESCRIPTION } from '@/lib/constants';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL
+  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin
+  : undefined;
 
 export const metadata: Metadata = {
   title: { default: SITE_NAME, template: `%s — ${SITE_NAME}` },
@@ -19,6 +22,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
+      <head>
+        {supabaseOrigin && <link rel="preconnect" href={supabaseOrigin} crossOrigin="anonymous" />}
+        <link rel="preconnect" href="https://img.gamemonetize.com" />
+      </head>
       <body className="min-h-full flex flex-col bg-[#0F0F0F] text-white antialiased">
         <ToastProvider />
         <div className="flex-1">{children}</div>

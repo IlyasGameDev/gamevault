@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import GameGrid from './GameGrid';
 import { GameWithCategories } from '@/lib/types/database';
 
@@ -8,11 +8,13 @@ export default function AllGamesSection() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
+  const [enabled, setEnabled] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef(1);
   const fetchingRef = useRef(false);
 
-  async function fetchGames(p: number, append = false) {
+  const fetchGames = useCallback(async (p: number, append = false) => {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
     if (p === 1) setLoading(true); else setLoadingMore(true);
@@ -30,14 +32,37 @@ export default function AllGamesSection() {
       setLoadingMore(false);
       fetchingRef.current = false;
     }
-  }
-
-  useEffect(() => {
-    void Promise.resolve().then(() => fetchGames(1));
   }, []);
 
   useEffect(() => {
-    if (!hasMore || loading || loadingMore) return;
+    if (!sectionRef.current) return;
+
+    if (!('IntersectionObserver' in window)) {
+      void Promise.resolve().then(() => setEnabled(true));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setEnabled(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '900px' }
+    );
+
+    observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!enabled || games.length > 0) return;
+    void Promise.resolve().then(() => fetchGames(1));
+  }, [enabled, fetchGames, games.length]);
+
+  useEffect(() => {
+    if (!enabled || !hasMore || loading || loadingMore) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -52,11 +77,11 @@ export default function AllGamesSection() {
 
     if (sentinelRef.current) observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [hasMore, loading, loadingMore]);
+  }, [enabled, fetchGames, hasMore, loading, loadingMore]);
 
   return (
-    <div className="space-y-6">
-      <GameGrid games={games} loading={loading} cols={5} />
+    <div ref={sectionRef} className="space-y-6">
+      {enabled ? <GameGrid games={games} loading={loading} cols={5} /> : <div className="h-1" aria-hidden="true" />}
       {loadingMore && (
         <div className="flex justify-center py-6">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#6C5CFF] border-t-transparent" />

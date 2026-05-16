@@ -1,4 +1,3 @@
-'use client';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Gamepad2, Play } from 'lucide-react';
@@ -51,6 +50,8 @@ function GameTile({
           alt={game.title}
           fill
           priority={priority}
+          fetchPriority={priority ? 'high' : undefined}
+          quality={priority ? 75 : 65}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           sizes={isLarge ? '(max-width: 1024px) 100vw, 60vw' : '(max-width: 1024px) 50vw, 20vw'}
         />

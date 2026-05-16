@@ -119,7 +119,6 @@ export default function Navbar({
               src="/yoplayables-logo.png"
               alt="YoPlayables"
               fill
-              priority
               className="object-contain object-left"
               sizes="(max-width: 640px) 135px, 155px"
             />
