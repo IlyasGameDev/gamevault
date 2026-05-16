@@ -5,6 +5,7 @@ import './globals.css';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import ToastProvider from '@/components/ui/Toast';
 import MicrosoftClarity from '@/components/analytics/MicrosoftClarity';
+import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import { SITE_NAME, SITE_DESCRIPTION } from '@/lib/constants';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -46,6 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="flex-1">{children}</div>
         </AuthProvider>
         <Analytics />
+        <GoogleAnalytics />
         <MicrosoftClarity />
       </body>
     </html>
