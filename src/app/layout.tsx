@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
-import { AuthProvider } from '@/components/auth/AuthProvider';
-import ToastProvider from '@/components/ui/Toast';
 import MicrosoftClarity from '@/components/analytics/MicrosoftClarity';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from '@/lib/constants';
@@ -46,17 +45,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {supabaseOrigin && <link rel="preconnect" href={supabaseOrigin} crossOrigin="anonymous" />}
         <link rel="preconnect" href="https://img.gamemonetize.com" />
         <meta name="google-adsense-account" content={ADSENSE_CLIENT} />
-        <script
-          async
+        <Script
+          id="google-adsense"
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+          strategy="lazyOnload"
           crossOrigin="anonymous"
         />
       </head>
       <body className="min-h-full flex flex-col bg-[#0F0F0F] text-white antialiased">
-        <AuthProvider>
-          <ToastProvider />
-          <div className="flex-1">{children}</div>
-        </AuthProvider>
+        <div className="flex-1">{children}</div>
         <Analytics />
         <GoogleAnalytics />
         <MicrosoftClarity />

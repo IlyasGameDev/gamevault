@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useAuthContext } from '@/components/auth/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
 import { GameWithCategories } from '@/lib/types/database';
 import GameGrid from '@/components/games/GameGrid';
@@ -21,7 +21,7 @@ interface RatedGame extends GameWithCategories {
 type Tab = 'favorites' | 'history' | 'ratings';
 
 export default function ProfilePage() {
-  const { user, profile, loading, refreshProfile } = useAuthContext();
+  const { user, profile, loading, refreshProfile } = useAuth();
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const avatarInputRef = useRef<HTMLInputElement>(null);

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useAuthContext } from '@/components/auth/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { CommentWithProfile } from '@/lib/types/database';
 import { timeAgo } from '@/lib/utils';
 import Button from '@/components/ui/Button';
@@ -27,7 +27,7 @@ function CommentItem({
   onReplyPosted: (parentId: string, reply: CommentWithProfile) => void;
   depth?: number;
 }) {
-  const { user } = useAuthContext();
+  const { user } = useAuth();
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -110,7 +110,7 @@ function CommentItem({
 }
 
 export default function GameComments({ gameId }: GameCommentsProps) {
-  const { user } = useAuthContext();
+  const { user } = useAuth();
   const [comments, setComments] = useState<CommentWithReplies[]>([]);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);

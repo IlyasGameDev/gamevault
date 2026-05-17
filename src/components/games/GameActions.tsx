@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { Heart, Share2, Flag, Maximize2, Minimize2 } from 'lucide-react';
-import { useAuthContext } from '@/components/auth/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { Game } from '@/lib/types/database';
 import { createClient } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
@@ -23,7 +23,7 @@ export default function GameActions({
   fullscreen = false,
   onFullscreenToggle,
 }: GameActionsProps) {
-  const { user } = useAuthContext();
+  const { user } = useAuth();
   const [isFav, setIsFav] = useState(false);
   const [favLoading, setFavLoading] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);

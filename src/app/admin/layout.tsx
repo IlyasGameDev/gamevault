@@ -3,7 +3,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Gamepad2, LayoutDashboard, Tags, MessageSquare, Users, ExternalLink, Menu, X, Shield, LogOut, CloudDownload } from 'lucide-react';
-import { useAuthContext } from '@/components/auth/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
+import ToastProvider from '@/components/ui/Toast';
 import { cn } from '@/lib/utils';
 import { SITE_NAME } from '@/lib/constants';
 import toast from 'react-hot-toast';
@@ -20,7 +21,7 @@ const NAV = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { profile, signOut } = useAuthContext();
+  const { profile, signOut } = useAuth();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -54,6 +55,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex min-h-screen bg-[#0f1117]">
+      <ToastProvider />
       {/* Desktop sidebar */}
       <aside className="hidden md:flex w-64 shrink-0 h-screen sticky top-0 border-r border-white/10 bg-[#0d0f1a] flex-col">
         <div className="p-6 border-b border-white/10">

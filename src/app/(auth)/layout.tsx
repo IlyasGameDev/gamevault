@@ -1,3 +1,10 @@
+import ToastProvider from '@/components/ui/Toast';
+
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      <ToastProvider />
+      {children}
+    </>
+  );
 }
