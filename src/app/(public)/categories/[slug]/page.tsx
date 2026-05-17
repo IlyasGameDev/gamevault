@@ -64,7 +64,9 @@ export default async function CategoryPage({ params }: Props) {
   if (!cat) notFound();
 
   const games = await getCategoryGames(cat.id);
+  if (games.length === 0) notFound();
   const seo = getCategorySeo(cat);
+  const guideItems = getCategoryGuideItems(cat.name, games.length);
 
   return (
     <main className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6">
@@ -88,10 +90,38 @@ export default async function CategoryPage({ params }: Props) {
         </div>
       </div>
 
+      <section className="grid gap-4 rounded-2xl border border-[#252525] bg-[#161616] p-5 sm:grid-cols-3 sm:p-6">
+        {guideItems.map((item) => (
+          <div key={item.title} className="space-y-2">
+            <h2 className="text-lg font-extrabold text-white">{item.title}</h2>
+            <p className="text-sm leading-6 text-[#B9B9C8]">{item.body}</p>
+          </div>
+        ))}
+      </section>
+
       <section className="space-y-4">
         <h2 className="text-2xl font-extrabold text-white">Top {cat.name} Games</h2>
         <GameGrid games={games} />
       </section>
     </main>
   );
+}
+
+function getCategoryGuideItems(categoryName: string, gameCount: number) {
+  const lowerName = categoryName.toLowerCase();
+
+  return [
+    {
+      title: `Choosing ${categoryName} Games`,
+      body: `Start with the first few ${lowerName} games that match your mood, then compare controls, thumbnail style, and tags before opening a longer session.`,
+    },
+    {
+      title: 'What to Expect',
+      body: `This category currently includes ${gameCount.toLocaleString()} playable browser games, with each page showing controls, platform notes, related games, and quick tips.`,
+    },
+    {
+      title: 'Best Way to Play',
+      body: 'Use fullscreen for games with small targets or fast movement, and try desktop controls when a game needs precise timing or repeated keyboard input.',
+    },
+  ];
 }

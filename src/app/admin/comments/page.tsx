@@ -15,10 +15,23 @@ export default function AdminCommentsPage() {
   const [filter, setFilter] = useState<Filter>('all');
 
   useEffect(() => {
-    setLoading(true);
+    let cancelled = false;
+
+    void Promise.resolve().then(() => {
+      if (!cancelled) setLoading(true);
+    });
+
     fetch(`/api/admin/comments?filter=${filter}`)
       .then((r) => r.json())
-      .then(({ data }) => { setComments(data ?? []); setLoading(false); });
+      .then(({ data }) => {
+        if (cancelled) return;
+        setComments(data ?? []);
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [filter]);
 
   function updateComment(id: string, changes: Partial<CommentWithProfile>) {

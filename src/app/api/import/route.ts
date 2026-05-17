@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      let baseSlug = slugify(game.title, { lower: true, strict: true });
+      const baseSlug = slugify(game.title, { lower: true, strict: true });
       let slug = baseSlug;
       let i = 1;
       while (existingSlugs.has(slug)) {

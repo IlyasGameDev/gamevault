@@ -255,6 +255,8 @@ export function getGameSeo(game: GameWithCategories) {
   const primaryCategory = game.categories[0];
   const categoryLabel = normalizeCategoryLabel(primaryCategory?.name ?? 'Browser', primaryCategory?.slug);
   const description = game.description?.trim();
+  const tags = game.tags.filter(Boolean).slice(0, 5);
+  const tagText = formatList(tags);
   const aboutBody = description
     ? `${ensureSentence(description)} ${game.title} works directly in your browser, so you can play on desktop, tablet, and mobile without downloading anything.`
     : `${game.title} is a free online ${categoryLabel.toLowerCase()} game on ${SITE_NAME}. It is designed for instant browser play on desktop, tablet, and mobile with no download required.`;
@@ -275,12 +277,18 @@ export function getGameSeo(game: GameWithCategories) {
       : `Play ${game.title} online for free on ${SITE_NAME}. This ${categoryLabel.toLowerCase()} browser game launches instantly with no download on desktop, tablet, or mobile.`,
     aboutHeading: `About ${game.title}`,
     aboutBody,
+    reviewHeading: `${game.title} Review`,
+    reviewBody: buildReviewBody(game.title, categoryLabel, tagText, description),
     howToPlayHeading: `How to Play ${game.title}`,
     howToPlayBody: game.instructions?.trim()
       ? `Use the controls below to jump in quickly and work through each challenge. ${getCategoryStrategyTip(primaryCategory?.slug)}`
       : `Jump in instantly and learn each round as you play. ${getCategoryStrategyTip(primaryCategory?.slug)}`,
     controlsHeading: 'Controls',
     controlItems: getControlItems(game.instructions),
+    strategyHeading: `${game.title} Tips`,
+    strategyItems: getStrategyItems(game.title, primaryCategory?.slug, tags),
+    bestForHeading: `Who Should Play ${game.title}?`,
+    bestForItems: getBestForItems(categoryLabel, tags),
     whyHeading: `Why Play ${game.title} on ${SITE_NAME}?`,
     whyPlayItems: [
       'Free to play online',
@@ -308,6 +316,78 @@ function getControlItems(instructions?: string | null) {
   return ['Mouse click, keyboard, or tap controls based on the game mode and your device.'];
 }
 
+function buildReviewBody(title: string, categoryLabel: string, tagText: string, description?: string | null) {
+  const base = description
+    ? `Based on its objective and controls, ${title} is best approached as a ${categoryLabel.toLowerCase()} game where the first few rounds are useful for learning the pace, scoring rules, and failure points.`
+    : `${title} is a quick browser-based ${categoryLabel.toLowerCase()} game with a simple start, short retry loop, and easy access from the game page.`;
+
+  const tagSentence = tagText
+    ? `The tagged themes here include ${tagText}, which helps players decide whether it fits the style of game they want before launching it.`
+    : `The page highlights the main category, platform, controls, and related games so players can compare it with similar browser titles.`;
+
+  return `${base} ${tagSentence} If a game does not load immediately, refreshing the page or trying a modern desktop or mobile browser usually resolves the issue.`;
+}
+
+function getStrategyItems(title: string, slug?: string, tags: string[] = []) {
+  const generic = [
+    `Start ${title} slowly for the first attempt so you can learn the objective before chasing a better score.`,
+    'Use short retries to recognize the patterns, hazards, or timing windows that matter most.',
+    'If you are playing on mobile, rotate the device or use fullscreen when the game gives you more room to react.',
+  ];
+
+  const categorySpecific: Record<string, string[]> = {
+    action: [
+      'Keep moving when enemies or obstacles appear, and avoid committing to one path too early.',
+      'Watch for repeated attack patterns before taking risky moves.',
+    ],
+    puzzle: [
+      'Look for the simplest move first, then plan one or two steps ahead before committing.',
+      'If the board gets crowded, pause and identify which pieces or colors create the biggest constraint.',
+    ],
+    racing: [
+      'Learn the track layout before pushing for speed, especially around corners and ramps.',
+      'Smooth steering usually beats sudden corrections when you are trying to improve a run.',
+    ],
+    shooting: [
+      'Prioritize accuracy over constant firing, especially when targets move or resources are limited.',
+      'Use cover, distance, or movement whenever the game gives you room to reset.',
+    ],
+    arcade: [
+      'Focus on rhythm and repeatable timing so later attempts feel more controlled.',
+      'Chase consistency before chasing a high score.',
+    ],
+    sports: [
+      'Watch the timing window for shots, passes, or swings before trying stronger moves.',
+      'Small adjustments often matter more than maximum power.',
+    ],
+    clicker: [
+      'Upgrade early systems that improve progress every round instead of spending only on short bursts.',
+      'Check whether idle rewards or multipliers become more valuable after the first few minutes.',
+    ],
+  };
+
+  const items = [...(categorySpecific[slug ?? ''] ?? []), ...generic];
+  if (tags.some((tag) => /mobile|tap|touch/i.test(tag))) {
+    items.push('Tap deliberately on smaller screens so accidental double inputs do not interrupt the run.');
+  }
+
+  return items.slice(0, 5);
+}
+
+function getBestForItems(categoryLabel: string, tags: string[] = []) {
+  const items = [
+    `Players looking for a free ${categoryLabel.toLowerCase()} game that starts quickly in the browser.`,
+    'Short play sessions during a break, commute, or quick desktop pause.',
+    'Anyone who wants to try a game without installing an app or creating an account.',
+  ];
+
+  if (tags.length > 0) {
+    items.push(`Players browsing themes like ${formatList(tags.slice(0, 3))}.`);
+  }
+
+  return items;
+}
+
 function getCategoryStrategyTip(slug?: string) {
   return CATEGORY_STRATEGY_TIPS[slug ?? ''] ?? 'Focus on timing, learn the objective quickly, and improve with each run.';
 }
@@ -331,4 +411,11 @@ function stripTrailingPunctuation(value: string) {
 function trimToLength(value: string, maxLength: number) {
   if (value.length <= maxLength) return value;
   return `${value.slice(0, maxLength - 1).trimEnd()}…`;
+}
+
+function formatList(items: string[]) {
+  if (items.length === 0) return '';
+  if (items.length === 1) return items[0];
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`;
 }

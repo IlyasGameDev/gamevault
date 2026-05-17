@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { SITE_URL } from '@/lib/constants';
 import { LANDING_PAGE_CONFIGS } from '@/lib/seo';
+import { getCategoriesWithPublishedGames } from '@/lib/categories';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { data: games } = await supabaseAdmin
@@ -9,9 +10,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .select('slug, updated_at')
     .eq('status', 'published');
 
-  const { data: categories } = await supabaseAdmin
-    .from('categories')
-    .select('slug');
+  const categories = await getCategoriesWithPublishedGames();
 
   const gameRoutes = (games ?? []).map((g) => ({
     url: `${SITE_URL}/games/${g.slug}`,

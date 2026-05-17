@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuthContext } from '@/components/auth/AuthProvider';
 import { CommentWithProfile } from '@/lib/types/database';
 import { timeAgo } from '@/lib/utils';
@@ -173,7 +174,7 @@ export default function GameComments({ gameId }: GameCommentsProps) {
         </form>
       ) : (
         <p className="text-sm text-[#A8A8A8]">
-          <a href="/login" className="font-semibold text-[#9B8CFF] hover:underline">Sign in</a> to leave a comment
+          <Link href="/login" className="font-semibold text-[#9B8CFF] hover:underline">Sign in</Link> to leave a comment
         </p>
       )}
 

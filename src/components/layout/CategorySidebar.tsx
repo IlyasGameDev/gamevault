@@ -3,9 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Clock3,
   Flame,
-  Gamepad2,
   Home,
   Medal,
   Sparkles,
@@ -18,13 +16,11 @@ import GameIcon from '@/components/ui/GameIcon';
 
 const PRIMARY_ITEMS = [
   { label: 'Home', href: '/', icon: Home },
-  { label: 'Recently played', href: '/profile', icon: Clock3 },
   { label: 'New', href: '/games?sort=newest', icon: Sparkles },
   { label: 'Popular Games', href: '/games?sort=popular', icon: Flame },
   { label: 'Updated', href: '/games?sort=newest', icon: Repeat2 },
-  { label: 'Originals', href: '/games?sort=rated', icon: Gamepad2 },
+  { label: 'Top Rated', href: '/games?sort=rated', icon: Medal },
   { label: 'Multiplayer', href: '/categories/multiplayer', icon: UsersRound, categorySlug: 'multiplayer' },
-  { label: 'Leaderboards', href: '/games?sort=rated', icon: Medal },
 ];
 
 export default function CategorySidebar({

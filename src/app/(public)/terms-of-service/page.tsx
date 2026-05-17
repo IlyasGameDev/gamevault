@@ -38,9 +38,16 @@ export default function TermsOfServicePage() {
       </section>
 
       <section>
+        <h2 className="text-xl font-bold text-white">Community content</h2>
+        <p className="mt-3">
+          If you post comments, ratings, profile details, or other content, you are responsible for making sure it is lawful, respectful, and does not infringe anyone else&apos;s rights. We may moderate, hide, or remove user-submitted content that violates these terms, site rules, or advertising and platform policies.
+        </p>
+      </section>
+
+      <section>
         <h2 className="text-xl font-bold text-white">Intellectual property</h2>
         <p className="mt-3">
-          The YoPlayables brand, site design, and original platform materials are protected by applicable intellectual property laws. Game content, trademarks, and related materials may belong to their respective owners.
+          The YoPlayables brand, site design, editorial text, and original platform materials are protected by applicable intellectual property laws. Game content, trademarks, thumbnails, and related materials may belong to their respective owners or licensors and are provided for browser play through authorized distribution sources.
         </p>
       </section>
 

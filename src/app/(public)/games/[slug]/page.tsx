@@ -269,6 +269,11 @@ function GameDescriptionPanel({ seo }: { seo: ReturnType<typeof getGameSeo> }) {
       </div>
 
       <div className="space-y-3">
+        <h2 className="text-2xl font-black text-white">{seo.reviewHeading}</h2>
+        <p className="max-w-6xl text-base leading-8 sm:text-lg">{seo.reviewBody}</p>
+      </div>
+
+      <div className="space-y-3">
         <h2 className="text-2xl font-black text-white">{seo.howToPlayHeading}</h2>
         <p className="max-w-6xl text-base leading-8 sm:text-lg">{seo.howToPlayBody}</p>
       </div>
@@ -289,6 +294,30 @@ function GameDescriptionPanel({ seo }: { seo: ReturnType<typeof getGameSeo> }) {
         <h2 className="text-2xl font-black text-white">{seo.whyHeading}</h2>
         <ul className="space-y-2 text-base leading-8 sm:text-lg">
           {seo.whyPlayItems.map((item) => (
+            <li key={item} className="flex gap-3">
+              <span className="mt-3 h-2 w-2 shrink-0 rounded-full bg-[#A996FF]" aria-hidden="true" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-2xl font-black text-white">{seo.strategyHeading}</h2>
+        <ul className="space-y-2 text-base leading-8 sm:text-lg">
+          {seo.strategyItems.map((item) => (
+            <li key={item} className="flex gap-3">
+              <span className="mt-3 h-2 w-2 shrink-0 rounded-full bg-[#A996FF]" aria-hidden="true" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-2xl font-black text-white">{seo.bestForHeading}</h2>
+        <ul className="space-y-2 text-base leading-8 sm:text-lg">
+          {seo.bestForItems.map((item) => (
             <li key={item} className="flex gap-3">
               <span className="mt-3 h-2 w-2 shrink-0 rounded-full bg-[#A996FF]" aria-hidden="true" />
               <span>{item}</span>

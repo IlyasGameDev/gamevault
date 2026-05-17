@@ -1,24 +1,34 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 export function useFavorites(userId?: string) {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     if (!userId) return;
-    setLoading(true);
+    let cancelled = false;
+
+    void Promise.resolve().then(() => {
+      if (!cancelled) setLoading(true);
+    });
+
     supabase
       .from('favorites')
       .select('game_id')
       .eq('user_id', userId)
       .then(({ data }) => {
+        if (cancelled) return;
         setFavorites(new Set(data?.map((f) => f.game_id) ?? []));
         setLoading(false);
       });
-  }, [userId]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase, userId]);
 
   async function toggle(gameId: string) {
     if (!userId) return;
