@@ -17,8 +17,8 @@ type HomepageChip = {
 };
 
 const HOMEPAGE_CHIPS: HomepageChip[] = [
-  { label: 'Trending', href: '/games?sort=popular', active: true, icon: 'hot' },
-  { label: 'New', href: '/games?sort=newest', icon: 'new' },
+  { label: 'Trending', href: '/popular-games', active: true, icon: 'hot' },
+  { label: 'New', href: '/new-games', icon: 'new' },
 ];
 
 export const metadata: Metadata = {
@@ -63,10 +63,16 @@ export default async function HomePage() {
         <div className="max-w-4xl space-y-4">
           <h1 className="text-3xl font-black text-white sm:text-4xl">Play Free Online Games on YoPlayables</h1>
           <p className="text-base leading-7 text-[#D8D8D8] sm:text-lg">
-            YoPlayables is a free browser games platform where you can play HTML5 and WebGL games instantly without downloads. Discover action, racing, puzzle, arcade, shooting, sports, multiplayer, and casual games that work on desktop, tablet, and mobile.
+            Play free online games on YoPlayables whenever you want a quick browser game that starts instantly. YoPlayables brings together HTML5 and WebGL games across action, racing, puzzle, arcade, shooting, sports, multiplayer, and casual categories, with no downloads or installs required.
           </p>
           <p className="text-base leading-7 text-[#B8B8B8] sm:text-lg">
-            Choose a game, click play, and start instantly. New games are added regularly, including trending browser games, mobile-friendly games, and quick games for short play sessions.
+            Choose a game, click play, and jump straight into desktop, tablet, or mobile gameplay. The homepage highlights trending games, new browser games, top-rated picks, and mobile-friendly titles so players can find something fast whether they want a short break or a longer session.
+          </p>
+          <p className="text-base leading-7 text-[#B8B8B8] sm:text-lg">
+            Browse by category to discover racing challenges, puzzle levels, arcade score chases, sports games, 2 player games, and multiplayer experiences. New games are added regularly, and every listed title is selected for instant play in modern web browsers.
+          </p>
+          <p className="text-base leading-7 text-[#B8B8B8] sm:text-lg">
+            YoPlayables is built for players who want free online games without waiting on app stores, launchers, or large updates. Open a game page, start playing, and share your favorites with friends from one simple browser-based game library.
           </p>
         </div>
       </section>
@@ -89,12 +95,12 @@ export default async function HomePage() {
       </nav>
 
       <section className="space-y-4">
-        <SectionHeader title="Trending Games" href="/games?sort=popular" icon="hot" />
+        <SectionHeader title="Trending Games" href="/popular-games" linkLabel="See all trending games" icon="hot" />
         <GameGrid games={trending} />
       </section>
 
       <section className="space-y-4 [contain-intrinsic-size:520px] [content-visibility:auto]">
-        <SectionHeader title="Browse by Category" href="/categories" />
+        <SectionHeader title="Browse by Category" href="/categories" linkLabel="See all categories" />
         <div className="flex flex-wrap gap-2">
           {categories.slice(0, 10).map((cat) => (
             <Link
@@ -110,7 +116,7 @@ export default async function HomePage() {
       </section>
 
       <section className="space-y-4 [contain-intrinsic-size:760px] [content-visibility:auto]">
-        <SectionHeader title="New Games" href="/games?sort=newest" icon="new" />
+        <SectionHeader title="New Games" href="/new-games" linkLabel="See all new games" icon="new" />
         <Suspense fallback={<GameGrid loading />}>
           <AsyncGameGrid sort="newest" />
         </Suspense>
@@ -139,7 +145,7 @@ async function PopularGamesSection() {
 
   return (
     <section className="space-y-4 [contain-intrinsic-size:760px] [content-visibility:auto]">
-      <SectionHeader title="Popular Games" href="/games?sort=rated" icon="popular" />
+      <SectionHeader title="Popular Games" href="/top-rated-games" linkLabel="See all top-rated games" icon="popular" />
       <GameGrid games={topRated} />
     </section>
   );
@@ -148,13 +154,21 @@ async function PopularGamesSection() {
 function PopularGamesFallback() {
   return (
     <section className="space-y-4 [contain-intrinsic-size:760px] [content-visibility:auto]">
-      <SectionHeader title="Popular Games" href="/games?sort=rated" icon="popular" />
+      <div className="flex items-center justify-between">
+        <p className="flex items-center gap-2 text-xl font-extrabold text-white">
+          <GameIcon type="popular" size={21} />
+          Popular Games
+        </p>
+        <Link href="/top-rated-games" className="flex items-center gap-1 text-sm font-bold text-[#A8A8A8] transition-colors hover:text-white">
+          See all top-rated games <ChevronRight size={16} className="text-[#6C5CFF]" />
+        </Link>
+      </div>
       <GameGrid loading />
     </section>
   );
 }
 
-function SectionHeader({ title, href, icon }: { title: string; href: string; icon?: GameIconType }) {
+function SectionHeader({ title, href, linkLabel, icon }: { title: string; href: string; linkLabel: string; icon?: GameIconType }) {
   return (
     <div className="flex items-center justify-between">
       <h2 className="flex items-center gap-2 text-xl font-extrabold text-white">
@@ -162,7 +176,7 @@ function SectionHeader({ title, href, icon }: { title: string; href: string; ico
         {title}
       </h2>
       <Link href={href} className="flex items-center gap-1 text-sm font-bold text-[#A8A8A8] transition-colors hover:text-white">
-        See all <ChevronRight size={16} className="text-[#6C5CFF]" />
+        {linkLabel} <ChevronRight size={16} className="text-[#6C5CFF]" />
       </Link>
     </div>
   );

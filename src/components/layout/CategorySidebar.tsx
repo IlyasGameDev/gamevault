@@ -16,10 +16,10 @@ import GameIcon from '@/components/ui/GameIcon';
 
 const PRIMARY_ITEMS = [
   { label: 'Home', href: '/', icon: Home },
-  { label: 'New', href: '/games?sort=newest', icon: Sparkles },
-  { label: 'Popular Games', href: '/games?sort=popular', icon: Flame },
-  { label: 'Updated', href: '/games?sort=newest', icon: Repeat2 },
-  { label: 'Top Rated', href: '/games?sort=rated', icon: Medal },
+  { label: 'New', href: '/new-games', icon: Sparkles },
+  { label: 'Popular Games', href: '/popular-games', icon: Flame },
+  { label: 'Updated', href: '/new-games', icon: Repeat2 },
+  { label: 'Top Rated', href: '/top-rated-games', icon: Medal },
   { label: 'Multiplayer', href: '/categories/multiplayer', icon: UsersRound, categorySlug: 'multiplayer' },
 ];
 

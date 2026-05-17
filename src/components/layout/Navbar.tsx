@@ -192,7 +192,7 @@ export default function Navbar({
               >
                 <Image
                   src={profile?.avatar_url || '/maskot.png'}
-                  alt=""
+                  alt="Your YoPlayables profile avatar"
                   fill
                   className="object-cover"
                   sizes="44px"
@@ -222,7 +222,7 @@ export default function Navbar({
             >
               <Image
                 src="/maskot.png"
-                alt=""
+                alt="YoPlayables mascot"
                 fill
                 className="object-cover"
                 sizes="44px"
@@ -256,8 +256,8 @@ export default function Navbar({
             <button type="submit" className="rounded-full bg-[#6C5CFF] px-4 py-2 text-sm font-bold text-white">Go</button>
           </form>
           <div className="grid grid-cols-2 gap-2">
-            <Link href="/games?sort=newest" onClick={() => setMobileOpen(false)} className="rounded-xl bg-[#1A1A1A] px-3 py-2 text-sm text-[#D8D8D8]">New Games</Link>
-            <Link href="/games?sort=popular" onClick={() => setMobileOpen(false)} className="rounded-xl bg-[#1A1A1A] px-3 py-2 text-sm text-[#D8D8D8]">Popular</Link>
+            <Link href="/new-games" onClick={() => setMobileOpen(false)} className="rounded-xl bg-[#1A1A1A] px-3 py-2 text-sm text-[#D8D8D8]">New Games</Link>
+            <Link href="/popular-games" onClick={() => setMobileOpen(false)} className="rounded-xl bg-[#1A1A1A] px-3 py-2 text-sm text-[#D8D8D8]">Popular</Link>
           </div>
           <div className="grid grid-cols-2 gap-2">
             {categories.map((cat) => (
@@ -304,7 +304,7 @@ function NotificationsPanel() {
       <div className="mt-4 rounded-2xl bg-[#282743] p-3">
         <div className="flex gap-3">
           <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-2xl bg-[#6C5CFF]/20">
-            <Image src="/maskot.png" alt="" fill className="object-cover" sizes="44px" />
+            <Image src="/maskot.png" alt="YoPlayables mascot" fill className="object-cover" sizes="44px" />
           </div>
           <div>
             <p className="text-sm font-bold text-white">New games are ready</p>
@@ -312,7 +312,7 @@ function NotificationsPanel() {
           </div>
         </div>
       </div>
-      <Link href="/games?sort=newest" className="mt-3 block rounded-2xl px-3 py-2 text-center text-sm font-bold text-[#9B8CFF] transition-colors hover:bg-[#6C5CFF]/10">
+      <Link href="/new-games" className="mt-3 block rounded-2xl px-3 py-2 text-center text-sm font-bold text-[#9B8CFF] transition-colors hover:bg-[#6C5CFF]/10">
         View new games
       </Link>
     </DropdownCard>
@@ -375,7 +375,7 @@ function GameListSection({
                     sizes="64px"
                   />
                 ) : (
-                  <Image src="/maskot.png" alt="" fill className="object-cover" sizes="64px" />
+                  <Image src="/maskot.png" alt="YoPlayables mascot" fill className="object-cover" sizes="64px" />
                 )}
               </div>
               <p className="min-w-0 truncate text-sm font-bold text-white">{game.title}</p>

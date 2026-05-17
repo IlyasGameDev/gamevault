@@ -31,7 +31,7 @@ export default function GameCard({ game }: GameCardProps) {
         )}
         <div className="absolute inset-0 flex items-end bg-black/0 opacity-0 transition-all duration-300 group-hover:bg-black/60 group-hover:opacity-100">
           <div className="w-full p-3 sm:p-4">
-            <h3 className="truncate text-sm font-extrabold text-white sm:text-base">{game.title}</h3>
+            <p className="truncate text-sm font-extrabold text-white sm:text-base">{game.title}</p>
           </div>
         </div>
       </div>
