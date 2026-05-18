@@ -5,10 +5,7 @@ import { LANDING_PAGE_CONFIGS } from '@/lib/seo';
 import { getCategoriesWithPublishedGames } from '@/lib/categories';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const { data: games } = await supabaseAdmin
-    .from('games')
-    .select('slug, updated_at')
-    .eq('status', 'published');
+  const games = await getPublishedGamesForSitemap();
 
   const categories = await getCategoriesWithPublishedGames();
 
@@ -44,4 +41,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...categoryRoutes,
     ...landingRoutes,
   ];
+}
+
+async function getPublishedGamesForSitemap() {
+  const batchSize = 1000;
+  const games: { slug: string; updated_at: string }[] = [];
+
+  for (let from = 0; ; from += batchSize) {
+    const { data, error } = await supabaseAdmin
+      .from('games')
+      .select('slug, updated_at')
+      .eq('status', 'published')
+      .order('slug', { ascending: true })
+      .range(from, from + batchSize - 1);
+
+    if (error) throw error;
+    if (!data?.length) break;
+
+    games.push(...data);
+
+    if (data.length < batchSize) break;
+  }
+
+  return games;
 }
