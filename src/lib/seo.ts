@@ -27,10 +27,10 @@ const CATEGORY_SEO_OVERRIDES: Record<string, CategorySeoOverride> = {
     secondary: 'Explore action games for desktop and mobile, including 3D adventures, stickman battles, zombie shooters, runners, and casual combat games built for quick sessions.',
   },
   puzzle: {
-    title: 'Free Puzzle Games Online',
-    description: `Play free puzzle games online on ${SITE_NAME}. Solve logic, matching, sorting, and brain-training browser games instantly on desktop or mobile.`,
-    intro: `Play free puzzle games online on ${SITE_NAME}. Solve logic challenges, matching games, sorting games, physics puzzles, and relaxing brain teasers directly in your browser.`,
-    secondary: 'Browse quick puzzle games for desktop and mobile, including number games, color sorting, tile matching, and clever level-based challenges with no installation needed.',
+    title: 'Free Puzzle Games Online - No Download',
+    description: `Play free puzzle games online on ${SITE_NAME}. Try logic, sorting, matching, hidden object, and brain-teaser games in your browser with no download.`,
+    intro: `Play free puzzle games online without installing anything. Start a quick sorting game, match tiles, hunt for hidden objects, or slow down with a logic puzzle that runs right in your browser.`,
+    secondary: 'This collection is built for short breaks and longer thinking sessions, with puzzle games that work on desktop, tablet, and mobile.',
   },
   racing: {
     title: 'Free Racing Games Online',
@@ -161,16 +161,6 @@ export const LANDING_PAGE_CONFIGS: Record<string, LandingPageConfig> = {
     whyTitle: 'Why Play Action Games?',
     whyBody: 'Action games deliver quick excitement, simple controls, and strong replay value, making them a natural fit for instant browser play.',
     categorySlug: 'action',
-  },
-  'free-puzzle-games': {
-    slug: 'free-puzzle-games',
-    title: 'Free Puzzle Games Online',
-    description: `Play free puzzle games online on ${SITE_NAME}. Solve logic, sorting, matching, and brain-training browser games instantly.`,
-    intro: `Play free puzzle games online on ${SITE_NAME}. Enjoy logic games, sorting games, matching challenges, and relaxing brain teasers with no download.`,
-    secondary: 'These quick browser puzzle games are easy to start on desktop or mobile and are perfect for short, thoughtful play sessions.',
-    whyTitle: 'Why Play Puzzle Games?',
-    whyBody: 'Puzzle games are easy to pick up, rewarding to master, and great for players who enjoy strategy, patterns, and problem solving.',
-    categorySlug: 'puzzle',
   },
   'free-racing-games': {
     slug: 'free-racing-games',

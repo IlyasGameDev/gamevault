@@ -44,6 +44,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/free-puzzle-games',
+        destination: '/categories/puzzle',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

@@ -16,6 +16,9 @@ export default function Footer() {
             />
           </Link>
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm font-medium text-[#A8A8A8]">
+            <Link href="/categories/puzzle" className="transition-colors hover:text-white">Free Puzzle Games</Link>
+            <Link href="/categories/action" className="transition-colors hover:text-white">Action Games</Link>
+            <Link href="/categories/racing" className="transition-colors hover:text-white">Racing Games</Link>
             <Link href="/about" className="transition-colors hover:text-white">About</Link>
             <Link href="/privacy-policy" className="transition-colors hover:text-white">Privacy Policy</Link>
             <Link href="/terms-of-service" className="transition-colors hover:text-white">Terms of Service</Link>

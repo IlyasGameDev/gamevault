@@ -69,7 +69,7 @@ export default async function HomePage() {
             Choose a game, click play, and jump straight into desktop, tablet, or mobile gameplay. The homepage highlights trending games, new browser games, top-rated picks, and mobile-friendly titles so players can find something fast whether they want a short break or a longer session.
           </p>
           <p className="text-base leading-7 text-[#B8B8B8] sm:text-lg">
-            Browse by category to discover racing challenges, puzzle levels, arcade score chases, sports games, 2 player games, and multiplayer experiences. New games are added regularly, and every listed title is selected for instant play in modern web browsers.
+            Browse by category to discover racing challenges, <Link href="/categories/puzzle" className="font-bold text-[#BDB5FF] hover:text-white">free puzzle games online</Link>, arcade score chases, sports games, 2 player games, and multiplayer experiences. New games are added regularly, and every listed title is selected for instant play in modern web browsers.
           </p>
           <p className="text-base leading-7 text-[#B8B8B8] sm:text-lg">
             YoPlayables is built for players who want free online games without waiting on app stores, launchers, or large updates. Open a game page, start playing, and share your favorites with friends from one simple browser-based game library.

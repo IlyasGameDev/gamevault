@@ -67,6 +67,7 @@ export default async function CategoryPage({ params }: Props) {
   if (games.length === 0) notFound();
   const seo = getCategorySeo(cat);
   const guideItems = getCategoryGuideItems(cat.name, games.length);
+  const contentSections = getCategoryContentSections(cat.slug);
 
   return (
     <main className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6">
@@ -99,12 +100,49 @@ export default async function CategoryPage({ params }: Props) {
         ))}
       </section>
 
+      {contentSections.length > 0 && (
+        <section className="grid gap-4 md:grid-cols-3">
+          {contentSections.map((section) => (
+            <article key={section.title} className="rounded-2xl border border-[#252525] bg-[#141414] p-5">
+              <h2 className="text-xl font-extrabold text-white">{section.title}</h2>
+              <p className="mt-3 text-sm leading-6 text-[#C9C9D4]">{section.body}</p>
+              {section.href && (
+                <Link href={section.href} className="mt-4 inline-flex text-sm font-bold text-[#A996FF] hover:text-white">
+                  {section.linkLabel}
+                </Link>
+              )}
+            </article>
+          ))}
+        </section>
+      )}
+
       <section className="space-y-4">
         <h2 className="text-2xl font-extrabold text-white">Top {cat.name} Games</h2>
         <GameGrid games={games} />
       </section>
     </main>
   );
+}
+
+function getCategoryContentSections(slug: string) {
+  if (slug !== 'puzzle') return [];
+
+  return [
+    {
+      title: 'Puzzle Games With No Download',
+      body: 'Open a game and play in the browser. That is the whole idea here: no app store, no launcher, no waiting around for a huge install before you can make the first move.',
+      href: '/categories/puzzle',
+      linkLabel: 'Browse no-download puzzle games',
+    },
+    {
+      title: 'Sorting, Matching, and Logic',
+      body: 'Some puzzles are calm and tidy. Others get messy fast. Try color sorting, tile matching, hidden-object games, number puzzles, and simple logic games until one clicks.',
+    },
+    {
+      title: 'Good for Quick Breaks',
+      body: 'Most of these games are easy to start, but they still give your brain something to chew on. Play one round during a break or settle in and keep improving your route.',
+    },
+  ];
 }
 
 function getCategoryGuideItems(categoryName: string, gameCount: number) {

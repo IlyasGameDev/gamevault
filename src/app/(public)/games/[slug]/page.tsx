@@ -92,24 +92,30 @@ export default async function GamePage({ params }: Props) {
 
   const related = await getRelated(game);
   const seo = getGameSeo(game);
+  const hasRating = game.rating_count > 0;
 
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'VideoGame',
+    '@type': hasRating ? ['VideoGame', 'WebApplication'] : 'VideoGame',
     name: game.title,
     url: `${SITE_URL}/games/${game.slug}`,
     image: game.thumbnail_url ?? undefined,
     description: seo.description,
     author: game.developer ? { '@type': 'Organization', name: game.developer } : undefined,
     genre: game.categories.map((c) => c.name),
+    applicationCategory: hasRating ? 'GameApplication' : undefined,
     gamePlatform: 'Web browser',
     operatingSystem: 'Web browser',
-    applicationCategory: 'Game',
+    offers: hasRating ? {
+      '@type': 'Offer',
+      price: 0,
+      priceCurrency: 'USD',
+    } : undefined,
     publisher: {
       '@type': 'Organization',
       name: SITE_NAME,
     },
-    aggregateRating: game.rating_count > 0 ? {
+    aggregateRating: hasRating ? {
       '@type': 'AggregateRating',
       ratingValue: game.rating_avg,
       ratingCount: game.rating_count,
