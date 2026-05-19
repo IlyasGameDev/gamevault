@@ -18,6 +18,27 @@ body {
   background: #0F0F0F;
 }
 
+[data-copy-protect] {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+[data-copy-protect] img {
+  -webkit-user-drag: none;
+}
+
+[data-copy-protect] input,
+[data-copy-protect] textarea,
+[data-copy-protect] select,
+[data-copy-protect] button,
+[data-copy-protect] [contenteditable="true"],
+[data-copy-protect] [data-allow-copy] {
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 @keyframes back-to-game-bob {
   0%, 100% {
     transform: translate3d(0, 0, 0);

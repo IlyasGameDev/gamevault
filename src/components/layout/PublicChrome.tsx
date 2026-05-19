@@ -12,8 +12,10 @@ export default function PublicChrome({
   return (
     <>
       <PublicShellControls categories={categories} />
-      <div className="flex-1 md:pl-[46px]">{children}</div>
-      <div className="md:pl-[46px]">
+      <div className="flex-1 md:pl-[46px]" data-copy-protect>
+        {children}
+      </div>
+      <div className="md:pl-[46px]" data-copy-protect>
         <Footer />
       </div>
     </>
