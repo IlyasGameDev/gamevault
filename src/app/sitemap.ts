@@ -1,13 +1,16 @@
 import { MetadataRoute } from 'next';
 import { supabaseAdmin } from '@/lib/supabase/admin';
-import { SITE_URL } from '@/lib/constants';
+import { GAMES_PER_PAGE, SITE_URL } from '@/lib/constants';
 import { LANDING_PAGE_CONFIGS } from '@/lib/seo';
 import { getCategoriesWithPublishedGames } from '@/lib/categories';
+import { getPublishedGameCount } from '@/lib/games';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const games = await getPublishedGamesForSitemap();
-
-  const categories = await getCategoriesWithPublishedGames();
+  const [games, categories, gameCount] = await Promise.all([
+    getPublishedGamesForSitemap(),
+    getCategoriesWithPublishedGames(),
+    getPublishedGameCount(),
+  ]);
 
   const gameRoutes = (games ?? []).map((g) => ({
     url: `${SITE_URL}/games/${g.slug}`,
@@ -28,6 +31,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
+  const archiveRoutes = Array.from(
+    { length: Math.max(0, Math.ceil(gameCount / GAMES_PER_PAGE) - 1) },
+    (_, index) => ({
+      url: `${SITE_URL}/games/page/${index + 2}`,
+      changeFrequency: 'weekly' as const,
+      priority: 0.5,
+    })
+  );
+
   return [
     { url: SITE_URL, changeFrequency: 'daily', priority: 1 },
     { url: `${SITE_URL}/games`, changeFrequency: 'daily', priority: 0.9 },
@@ -37,6 +49,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/about`, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${SITE_URL}/privacy-policy`, changeFrequency: 'monthly', priority: 0.3 },
     { url: `${SITE_URL}/terms-of-service`, changeFrequency: 'monthly', priority: 0.3 },
+    ...archiveRoutes,
     ...gameRoutes,
     ...categoryRoutes,
     ...landingRoutes,

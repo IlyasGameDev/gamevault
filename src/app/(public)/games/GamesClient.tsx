@@ -1,33 +1,51 @@
 'use client';
 import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import GameGrid from '@/components/games/GameGrid';
 import CategoryFilter from '@/components/games/CategoryFilter';
 import { Search } from 'lucide-react';
 import { GameWithCategories } from '@/lib/types/database';
 import { useDebounce } from '@/hooks/useDebounce';
-import { SORT_OPTIONS } from '@/lib/constants';
+import { GAMES_PER_PAGE, SORT_OPTIONS } from '@/lib/constants';
 
-function BrowseContent() {
+type BrowseContentProps = {
+  initialGames: GameWithCategories[];
+  initialTotal: number;
+  initialHasMore: boolean;
+  initialSort: string;
+  hasInitialClientFilters: boolean;
+};
+
+function BrowseContent({
+  initialGames,
+  initialTotal,
+  initialHasMore,
+  initialSort,
+  hasInitialClientFilters,
+}: BrowseContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
-  const sort = searchParams.get('sort') ?? 'newest';
+  const rawSort = searchParams.get('sort') ?? 'newest';
+  const sort = SORT_OPTIONS.some((option) => option.value === rawSort) ? rawSort : 'newest';
   const category = searchParams.get('category') ?? '';
   const q = searchParams.get('q') ?? '';
 
   const [search, setSearch] = useState(q);
   const debouncedSearch = useDebounce(search, 400);
+  const initialQueryKey = !hasInitialClientFilters && sort === initialSort ? `${sort}||` : '';
 
-  const [games, setGames] = useState<GameWithCategories[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [games, setGames] = useState<GameWithCategories[]>(initialGames);
+  const [loading, setLoading] = useState(hasInitialClientFilters);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
-  const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(initialHasMore);
+  const [total, setTotal] = useState(initialTotal);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef(1);
   const fetchingRef = useRef(false);
+  const lastQueryKeyRef = useRef(initialQueryKey);
 
   // Sync search input → URL
   useEffect(() => {
@@ -56,7 +74,7 @@ function BrowseContent() {
         return [...current, ...nextGames.filter((game: GameWithCategories) => !seen.has(game.id))];
       });
       setTotal(count ?? 0);
-      setHasMore((count ?? 0) > nextPage * 24);
+      setHasMore((count ?? 0) > nextPage * GAMES_PER_PAGE);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -66,12 +84,15 @@ function BrowseContent() {
 
   // Reset + fetch page 1 when filters change
   useEffect(() => {
+    const queryKey = `${sort}|${category}|${q}`;
+    if (lastQueryKeyRef.current === queryKey) return;
+    lastQueryKeyRef.current = queryKey;
     pageRef.current = 1;
     void Promise.resolve().then(() => {
       setGames([]);
       fetchPage(1);
     });
-  }, [fetchPage]);
+  }, [category, fetchPage, q, sort]);
 
   // Infinite scroll — load next page when sentinel is visible
   useEffect(() => {
@@ -138,6 +159,7 @@ function BrowseContent() {
 
       <CategoryFilter />
       <GameGrid games={games} loading={loading} />
+      {!q && !category && total > GAMES_PER_PAGE && <ArchiveLinks total={total} />}
 
       {loadingMore && (
         <div className="flex justify-center py-6">
@@ -149,6 +171,34 @@ function BrowseContent() {
   );
 }
 
-export default function GamesPage() {
-  return <Suspense><BrowseContent /></Suspense>;
+function ArchiveLinks({ total }: { total: number }) {
+  const pageCount = Math.ceil(total / GAMES_PER_PAGE);
+  const visiblePages = Array.from({ length: Math.min(pageCount, 8) }, (_, index) => index + 1);
+
+  return (
+    <nav className="flex flex-wrap items-center gap-2 rounded-2xl border border-[#252525] bg-[#151522] p-4" aria-label="Game archive pages">
+      <span className="mr-1 text-sm font-bold text-[#A8A8A8]">Archive</span>
+      {visiblePages.map((page) => (
+        <Link
+          key={page}
+          href={page === 1 ? '/games' : `/games/page/${page}`}
+          className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-[#2A2A2A] px-3 text-sm font-black text-[#D8D8E8] transition-colors hover:border-[#6C5CFF]/70 hover:text-white"
+        >
+          {page}
+        </Link>
+      ))}
+      {pageCount > visiblePages.length && (
+        <Link
+          href={`/games/page/${visiblePages.length + 1}`}
+          className="inline-flex h-9 items-center rounded-full border border-[#2A2A2A] px-4 text-sm font-black text-[#A996FF] transition-colors hover:border-[#6C5CFF]/70 hover:text-white"
+        >
+          More
+        </Link>
+      )}
+    </nav>
+  );
+}
+
+export default function GamesPage(props: BrowseContentProps) {
+  return <Suspense><BrowseContent {...props} /></Suspense>;
 }
