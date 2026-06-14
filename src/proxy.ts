@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { getIndexNowKey, getIndexNowKeyPath } from '@/lib/indexNow';
 import { getProductionSiteUrl, shouldRedirectToCanonicalHost } from '@/lib/siteUrl';
 
 export async function proxy(request: NextRequest) {
@@ -7,6 +8,17 @@ export async function proxy(request: NextRequest) {
   if (shouldRedirectToCanonicalHost(host)) {
     const redirectUrl = new URL(request.nextUrl.pathname + request.nextUrl.search, getProductionSiteUrl());
     return NextResponse.redirect(redirectUrl, 308);
+  }
+
+  const indexNowKey = getIndexNowKey();
+  const indexNowKeyPath = getIndexNowKeyPath();
+  if (indexNowKey && request.nextUrl.pathname === indexNowKeyPath) {
+    return new NextResponse(`${indexNowKey}\n`, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600',
+      },
+    });
   }
 
   let response = NextResponse.next({ request });

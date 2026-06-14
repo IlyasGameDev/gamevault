@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
+import { submitGameUrlsToIndexNow } from '@/lib/indexNow';
 import slugify from 'slugify';
 
 interface FeedGame {
@@ -42,6 +43,7 @@ export async function POST(request: NextRequest) {
 
     let imported = 0;
     let skipped = 0;
+    const publishedSlugs: string[] = [];
     const errors: string[] = [];
 
     for (const game of games) {
@@ -109,8 +111,13 @@ export async function POST(request: NextRequest) {
       }
 
       existingUrls.add(game.url);
+      if (status === 'published') {
+        publishedSlugs.push(slug);
+      }
       imported++;
     }
+
+    await submitGameUrlsToIndexNow(publishedSlugs);
 
     return NextResponse.json({ imported, skipped, errors });
   } catch (err) {

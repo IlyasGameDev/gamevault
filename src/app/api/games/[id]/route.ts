@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
+import { submitGameUrlsToIndexNow } from '@/lib/indexNow';
 import { gameSchema } from '@/lib/validations';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -44,7 +45,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     ) as typeof parsed.data;
     const { category_ids, ...gameData } = updateData;
 
-    const { data: existing } = await supabaseAdmin.from('games').select('status').eq('id', id).single();
+    const { data: existing } = await supabaseAdmin.from('games').select('slug, status').eq('id', id).single();
     const wasPublished = existing?.status === 'published';
     const nowPublished = gameData.status === 'published';
 
@@ -70,6 +71,15 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
+    const changedPublishedUrls = new Set<string>();
+    if (wasPublished && existing?.slug) {
+      changedPublishedUrls.add(existing.slug);
+    }
+    if (game.status === 'published') {
+      changedPublishedUrls.add(game.slug);
+    }
+    await submitGameUrlsToIndexNow(Array.from(changedPublishedUrls));
+
     return NextResponse.json({ data: game });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to update game';
@@ -87,8 +97,13 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
     if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
+    const { data: existing } = await supabaseAdmin.from('games').select('slug, status').eq('id', id).single();
     const { error } = await supabaseAdmin.from('games').delete().eq('id', id);
     if (error) throw error;
+
+    if (existing?.status === 'published' && existing.slug) {
+      await submitGameUrlsToIndexNow([existing.slug]);
+    }
 
     return NextResponse.json({ message: 'Game deleted' });
   } catch (err: unknown) {

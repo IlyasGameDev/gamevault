@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase/admin';
 import { gameSchema } from '@/lib/validations';
 import slugify from 'slugify';
 import { GAMES_PER_PAGE } from '@/lib/constants';
+import { submitGameUrlsToIndexNow } from '@/lib/indexNow';
 import { sanitize } from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
@@ -85,6 +86,10 @@ export async function POST(request: NextRequest) {
       await supabaseAdmin.from('game_categories').insert(
         category_ids.map((id) => ({ game_id: game.id, category_id: id }))
       );
+    }
+
+    if (game.status === 'published') {
+      await submitGameUrlsToIndexNow([game.slug]);
     }
 
     return NextResponse.json({ data: game }, { status: 201 });
