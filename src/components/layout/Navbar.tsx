@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Menu, Search, X } from 'lucide-react';
 import DeferredNavbarAuthMenu from '@/components/layout/DeferredNavbarAuthMenu';
 import { Category } from '@/lib/types/database';
@@ -17,6 +17,7 @@ export default function Navbar({
   onToggleSidebar?: () => void;
 }) {
   const router = useRouter();
+  const gameDetail = /^\/games\/[^/]+$/.test(usePathname());
   const [search, setSearch] = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
   const sidebarId = 'category-sidebar';
@@ -52,6 +53,8 @@ export default function Navbar({
             <Image
               src="/yoplayables-logo.png"
               loading="eager"
+              fetchPriority={gameDetail ? 'high' : undefined}
+              decoding={gameDetail ? 'sync' : 'async'}
               alt="YoPlayables"
               fill
               className="object-contain object-left"
