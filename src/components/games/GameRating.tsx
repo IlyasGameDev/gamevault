@@ -1,5 +1,7 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Star } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Game } from '@/lib/types/database';
@@ -12,6 +14,7 @@ interface GameRatingProps {
 
 export default function GameRating({ game, userRating: initialRating }: GameRatingProps) {
   const { user } = useAuth();
+  const router = useRouter();
   const [hover, setHover] = useState(0);
   const [rating, setRating] = useState(initialRating ?? 0);
   const [submitting, setSubmitting] = useState(false);
@@ -27,6 +30,7 @@ export default function GameRating({ game, userRating: initialRating }: GameRati
       });
       if (!res.ok) throw new Error();
       setRating(score);
+      router.refresh();
       toast.success('Rating saved!');
     } catch {
       toast.error('Failed to save rating');
@@ -42,6 +46,8 @@ export default function GameRating({ game, userRating: initialRating }: GameRati
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
+              type="button"
+              aria-label={`Rate ${star} out of 5`}
               disabled={submitting}
               onMouseEnter={() => setHover(star)}
               onMouseLeave={() => setHover(0)}
@@ -67,7 +73,7 @@ export default function GameRating({ game, userRating: initialRating }: GameRati
           )}
         </div>
       </div>
-      {!user && <p className="text-xs text-gray-600">Sign in to rate this game</p>}
+      {!user && <p className="text-xs text-gray-600"><Link href="/login" className="underline">Sign in</Link> to rate this game</p>}
     </div>
   );
 }

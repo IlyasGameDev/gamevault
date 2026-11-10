@@ -1,3 +1,4 @@
+import { revalidateTag, revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ratingSchema } from '@/lib/validations';
@@ -25,6 +26,9 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) throw error;
+    const { data: game } = await supabase.from('games').select('slug').eq('id', game_id).maybeSingle();
+    revalidateTag('ratings', { expire: 0 });
+    if (game) revalidatePath(`/games/${game.slug}`);
     return NextResponse.json({ data });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to submit rating';

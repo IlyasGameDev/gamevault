@@ -1,7 +1,8 @@
 'use client';
-import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Gamepad2, Maximize2, Minimize2 } from 'lucide-react';
 import { Game } from '@/lib/types/database';
+import { canOptimizeGameImage } from '@/lib/gameImage';
 import Image from 'next/image';
 import Link from 'next/link';
 import GameActions from '@/components/games/GameActions';
@@ -36,8 +37,6 @@ function getGameSrc(game: Game): string {
 export default function GamePlayer({ game }: GamePlayerProps) {
   const [nativeFullscreen, setNativeFullscreen] = useState(false);
   const [pseudoFullscreen, setPseudoFullscreen] = useState(false);
-  const [frameSize, setFrameSize] = useState<{ width: number; height: number } | null>(null);
-  const sizerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const playTrackedRef = useRef(false);
   const src = getGameSrc(game);
@@ -75,44 +74,6 @@ export default function GamePlayer({ game }: GamePlayerProps) {
       window.removeEventListener('keydown', onKeyDown);
     };
   }, [pseudoFullscreen]);
-
-  useLayoutEffect(() => {
-    if (fullscreen) return;
-
-    const sizer = sizerRef.current;
-    if (!sizer) return;
-
-    function updateFrameSize() {
-      if (!sizer) return;
-
-      const bounds = sizer.getBoundingClientRect();
-      if (bounds.width <= 0) return;
-
-      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-      const availableHeight = Math.max(220, viewportHeight - bounds.top - 12);
-      const scale = Math.min(bounds.width / gameWidth, availableHeight / gameHeight);
-
-      setFrameSize({
-        width: Math.floor(gameWidth * scale),
-        height: Math.floor(gameHeight * scale),
-      });
-    }
-
-    updateFrameSize();
-
-    const resizeObserver = new ResizeObserver(updateFrameSize);
-    resizeObserver.observe(sizer);
-    window.addEventListener('resize', updateFrameSize);
-    window.visualViewport?.addEventListener('resize', updateFrameSize);
-    window.visualViewport?.addEventListener('scroll', updateFrameSize);
-
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener('resize', updateFrameSize);
-      window.visualViewport?.removeEventListener('resize', updateFrameSize);
-      window.visualViewport?.removeEventListener('scroll', updateFrameSize);
-    };
-  }, [fullscreen, gameHeight, gameWidth]);
 
   async function toggleFullscreen() {
     const fullscreenDocument = document as FullscreenDocument;
@@ -169,7 +130,7 @@ export default function GamePlayer({ game }: GamePlayerProps) {
 
   return (
     <>
-      <div ref={sizerRef} className="w-full">
+      <div className="w-full">
         <div
           ref={containerRef}
           className={`overflow-hidden rounded-lg bg-black shadow-2xl shadow-black/45 ${
@@ -182,8 +143,7 @@ export default function GamePlayer({ game }: GamePlayerProps) {
               ? { height: '100dvh' }
               : {
                   aspectRatio,
-                  height: frameSize ? `${frameSize.height}px` : undefined,
-                  width: frameSize ? `${frameSize.width}px` : undefined,
+                  width: `min(100%, calc(max(220px, 100dvh - 92px) * ${gameWidth / gameHeight}))`,
                   maxWidth: '100%',
                 }
           }
@@ -215,7 +175,7 @@ export default function GamePlayer({ game }: GamePlayerProps) {
                 src={game.thumbnail_url}
                 alt={game.title}
                 fill
-                unoptimized
+                unoptimized={!canOptimizeGameImage(game.thumbnail_url)}
                 className="object-cover"
                 sizes="36px"
               />

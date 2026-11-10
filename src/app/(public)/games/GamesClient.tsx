@@ -7,7 +7,7 @@ import CategoryFilter from '@/components/games/CategoryFilter';
 import { Search } from 'lucide-react';
 import { GameWithCategories } from '@/lib/types/database';
 import { useDebounce } from '@/hooks/useDebounce';
-import { GAMES_PER_PAGE, SORT_OPTIONS } from '@/lib/constants';
+import { archiveHref, archiveSort, GAMES_PER_PAGE, SORT_OPTIONS, type SortOption } from '@/lib/constants';
 
 type BrowseContentProps = {
   initialGames: GameWithCategories[];
@@ -28,8 +28,7 @@ function BrowseContent({
   const router = useRouter();
   const pathname = usePathname();
 
-  const rawSort = searchParams.get('sort') ?? 'newest';
-  const sort = SORT_OPTIONS.some((option) => option.value === rawSort) ? rawSort : 'newest';
+  const sort = archiveSort(searchParams.get('sort'));
   const category = searchParams.get('category') ?? '';
   const q = searchParams.get('q') ?? '';
 
@@ -44,7 +43,9 @@ function BrowseContent({
   const [total, setTotal] = useState(initialTotal);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef(1);
-  const fetchingRef = useRef(false);
+  const activeRequest = useRef<AbortController | null>(null);
+  const [failedPage, setFailedPage] = useState<number | null>(null);
+  useEffect(() => () => activeRequest.current?.abort(), []);
   const lastQueryKeyRef = useRef(initialQueryKey);
 
   // Sync search input → URL
@@ -58,15 +59,22 @@ function BrowseContent({
   }, [debouncedSearch, pathname, q, router, searchParams]);
 
   const fetchPage = useCallback(async (nextPage: number, append = false) => {
-    if (fetchingRef.current) return;
-    fetchingRef.current = true;
+    if (append && activeRequest.current) return;
+    activeRequest.current?.abort();
+    const request = new AbortController();
+    activeRequest.current = request;
+    setFailedPage(null);
     if (append) setLoadingMore(true);
     else setLoading(true);
     const params = new URLSearchParams({ page: String(nextPage), sort });
     if (q) params.set('q', q);
     if (category) params.set('category', category);
     try {
-      const { data, count } = await fetch(`/api/games?${params}`).then((r) => r.json());
+      const response = await fetch(`/api/games?${params}`, { signal: request.signal });
+      if (!response.ok) throw new Error('Game list unavailable');
+      const { data, count } = await response.json();
+      if (request.signal.aborted) return;
+      pageRef.current = nextPage;
       setGames((current) => {
         const nextGames = data ?? [];
         if (!append) return nextGames;
@@ -75,10 +83,14 @@ function BrowseContent({
       });
       setTotal(count ?? 0);
       setHasMore((count ?? 0) > nextPage * GAMES_PER_PAGE);
+    } catch {
+      if (!request.signal.aborted) setFailedPage(nextPage);
     } finally {
-      setLoading(false);
-      setLoadingMore(false);
-      fetchingRef.current = false;
+      if (activeRequest.current === request) {
+        activeRequest.current = null;
+        setLoading(false);
+        setLoadingMore(false);
+      }
     }
   }, [category, q, sort]);
 
@@ -96,13 +108,12 @@ function BrowseContent({
 
   // Infinite scroll — load next page when sentinel is visible
   useEffect(() => {
-    if (!hasMore || loading || loadingMore) return;
+    if (!hasMore || loading || loadingMore || failedPage !== null) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (!entries[0].isIntersecting) return;
         const next = pageRef.current + 1;
-        pageRef.current = next;
         fetchPage(next, true);
       },
       { rootMargin: '400px' }
@@ -110,7 +121,7 @@ function BrowseContent({
 
     if (sentinelRef.current) observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [fetchPage, hasMore, loading, loadingMore]);
+  }, [fetchPage, hasMore, loading, loadingMore, failedPage]);
 
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -159,8 +170,13 @@ function BrowseContent({
 
       <CategoryFilter />
       <GameGrid games={games} loading={loading} />
-      {!q && !category && total > GAMES_PER_PAGE && <ArchiveLinks total={total} />}
+      {!q && !category && total > GAMES_PER_PAGE && <ArchiveLinks total={total} sort={sort} />}
 
+      {failedPage !== null && (
+        <button type="button" className="rounded-full border border-[#6C5CFF] px-4 py-2 text-white" onClick={() => fetchPage(failedPage, failedPage > 1)}>
+          Retry loading games
+        </button>
+      )}
       {loadingMore && (
         <div className="flex justify-center py-6">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#6C5CFF] border-t-transparent" />
@@ -171,7 +187,7 @@ function BrowseContent({
   );
 }
 
-function ArchiveLinks({ total }: { total: number }) {
+function ArchiveLinks({ total, sort }: { total: number; sort: SortOption }) {
   const pageCount = Math.ceil(total / GAMES_PER_PAGE);
   const visiblePages = Array.from({ length: Math.min(pageCount, 8) }, (_, index) => index + 1);
 
@@ -181,7 +197,7 @@ function ArchiveLinks({ total }: { total: number }) {
       {visiblePages.map((page) => (
         <Link
           key={page}
-          href={page === 1 ? '/games' : `/games/page/${page}`}
+          href={archiveHref(page, sort)}
           className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-[#2A2A2A] px-3 text-sm font-black text-[#D8D8E8] transition-colors hover:border-[#6C5CFF]/70 hover:text-white"
         >
           {page}
@@ -189,7 +205,7 @@ function ArchiveLinks({ total }: { total: number }) {
       ))}
       {pageCount > visiblePages.length && (
         <Link
-          href={`/games/page/${visiblePages.length + 1}`}
+          href={archiveHref(visiblePages.length + 1, sort)}
           className="inline-flex h-9 items-center rounded-full border border-[#2A2A2A] px-4 text-sm font-black text-[#A996FF] transition-colors hover:border-[#6C5CFF]/70 hover:text-white"
         >
           More

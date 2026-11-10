@@ -1,7 +1,10 @@
+import { refreshCatalog } from '@/lib/refreshCatalog';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { submitGameUrlsToIndexNow } from '@/lib/indexNow';
+import { gameText } from '@/lib/gameText';
+import { gameFacts } from '@/lib/gameFacts';
 import slugify from 'slugify';
 
 interface FeedGame {
@@ -34,12 +37,22 @@ export async function POST(request: NextRequest) {
 
     if (!games?.length) return NextResponse.json({ error: 'No games provided' }, { status: 400 });
 
-    const { data: existing } = await supabaseAdmin
-      .from('games')
-      .select('slug, iframe_url');
-
-    const existingSlugs = new Set((existing ?? []).map((g) => g.slug));
-    const existingUrls = new Set((existing ?? []).map((g) => g.iframe_url));
+    // The catalog can exceed PostgREST's maximum response size.
+    const existingSlugs = new Set<string>();
+    const existingUrls = new Set<string>();
+    let after: string | undefined;
+    while (true) {
+      let query = supabaseAdmin.from('games').select('slug, iframe_url').order('slug').limit(1000);
+      if (after) query = query.gt('slug', after);
+      const { data, error } = await query;
+      if (error) throw error;
+      if (!data?.length) break;
+      for (const row of data) {
+        existingSlugs.add(row.slug);
+        if (row.iframe_url) existingUrls.add(row.iframe_url);
+      }
+      after = data[data.length - 1].slug;
+    }
 
     let imported = 0;
     let skipped = 0;
@@ -59,7 +72,8 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      const baseSlug = slugify(game.title, { lower: true, strict: true });
+      const title = gameText(game.title);
+      const baseSlug = slugify(title, { lower: true, strict: true });
       let slug = baseSlug;
       let i = 1;
       while (existingSlugs.has(slug)) {
@@ -73,10 +87,10 @@ export async function POST(request: NextRequest) {
       const { data: inserted, error } = await supabaseAdmin
         .from('games')
         .insert({
-          title: game.title,
+          title,
           slug,
-          description: game.description || null,
-          instructions: game.instructions || null,
+          description: gameText(game.description || '') || null,
+          instructions: gameText(game.instructions || '') || null,
           game_type: 'iframe',
           iframe_url: game.url,
           thumbnail_url: game.thumb || null,
@@ -88,8 +102,7 @@ export async function POST(request: NextRequest) {
           is_featured: false,
           game_entry_file: 'index.html',
           published_at: status === 'published' ? new Date().toISOString() : null,
-          developer: 'GameMonetize',
-          developer_url: 'https://gamemonetize.com',
+          developer: gameFacts({ iframe_url: game.url, developer: null, developer_url: null }).developer ?? null,
         })
         .select('id')
         .single();
@@ -117,6 +130,7 @@ export async function POST(request: NextRequest) {
       imported++;
     }
 
+    if (publishedSlugs.length) refreshCatalog(publishedSlugs);
     await submitGameUrlsToIndexNow(publishedSlugs);
 
     return NextResponse.json({ imported, skipped, errors });

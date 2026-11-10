@@ -14,9 +14,6 @@ type LandingPageConfig = {
   description: string;
   intro: string;
   secondary: string;
-  whyTitle: string;
-  whyBody: string;
-  categorySlug?: string;
 };
 
 const CATEGORY_SEO_OVERRIDES: Record<string, CategorySeoOverride> = {
@@ -118,89 +115,13 @@ const CATEGORY_SEO_OVERRIDES: Record<string, CategorySeoOverride> = {
   },
 };
 
-const CATEGORY_STRATEGY_TIPS: Record<string, string> = {
-  action: 'Watch enemy patterns, stay mobile, and react quickly as the pace ramps up.',
-  puzzle: 'Plan a few moves ahead and look for simple patterns before making a big move.',
-  racing: 'Carry speed through corners, learn the track, and smooth out each run to improve your time.',
-  shooting: 'Stay accurate, track movement carefully, and balance offense with survival.',
-  arcade: 'Focus on timing, rhythm, and repeatable patterns so your score climbs steadily.',
-  sports: 'Use quick reactions and consistent timing to outplay the challenge or opponent.',
-  adventure: 'Explore carefully, learn each obstacle, and use each attempt to improve your route.',
-  multiplayer: 'Stay flexible, react to other players quickly, and capitalize on openings.',
-  stickman: 'Use momentum and timing to control each move and avoid simple mistakes.',
-  '3d': 'Use camera perspective and movement together so you can react early and stay in control.',
-  io: 'Play aggressively when it is safe, but protect your progress so you can stay in the match longer.',
-  clicker: 'Prioritize efficient upgrades early so progress accelerates as the session continues.',
-};
-
 export const LANDING_PAGE_CONFIGS: Record<string, LandingPageConfig> = {
-  'free-online-games': {
-    slug: 'free-online-games',
-    title: 'Play Free Online Games',
-    description: `Play free online games on ${SITE_NAME}. Discover browser games across action, puzzle, racing, sports, arcade, and multiplayer categories with no download.`,
-    intro: `Play free online games on ${SITE_NAME} without installing anything. Explore action games, puzzle games, racing games, sports games, multiplayer games, and casual browser games that launch instantly.`,
-    secondary: 'Our collection is built for quick play sessions on desktop, tablet, and mobile, with new games added regularly across the most popular genres.',
-    whyTitle: 'Why Play Free Online Games?',
-    whyBody: 'Online browser games are easy to start, simple to share, and great for short breaks or longer play sessions because they run instantly in modern browsers.',
-  },
-  'free-browser-games': {
-    slug: 'free-browser-games',
-    title: 'Free Browser Games Online | No Download Games',
-    description: `Play free browser games online on ${SITE_NAME}. Enjoy WebGL and HTML5 games instantly with no download on desktop, tablet, and mobile.`,
-    intro: `Play free browser games online on ${SITE_NAME} without downloads or installs. Our collection includes action games, puzzle games, racing games, sports games, arcade games, and multiplayer games that run directly in your web browser.`,
-    secondary: 'Choose a game and start instantly on desktop, tablet, or mobile. Everything is designed for quick access, easy sharing, and smooth browser play.',
-    whyTitle: 'Why Play Browser Games?',
-    whyBody: 'Browser games are quick to start, easy to share, and flexible across devices, which makes them ideal for instant entertainment without waiting through installs or updates.',
-  },
-  'free-action-games': {
-    slug: 'free-action-games',
-    title: 'Free Action Games Online',
-    description: `Play free action games online on ${SITE_NAME}. Discover fighting, battle, and survival browser games with instant play and no download.`,
-    intro: `Play free action games online on ${SITE_NAME}. Find browser games packed with combat, reflex challenges, running, survival, and arcade-style action.`,
-    secondary: 'Jump into quick sessions on desktop or mobile and explore action-focused games that launch instantly in modern browsers.',
-    whyTitle: 'Why Play Action Games?',
-    whyBody: 'Action games deliver quick excitement, simple controls, and strong replay value, making them a natural fit for instant browser play.',
-    categorySlug: 'action',
-  },
-  'free-racing-games': {
-    slug: 'free-racing-games',
-    title: 'Free Racing Games Online',
-    description: `Play free racing games online on ${SITE_NAME}. Enjoy car, bike, drift, and stunt browser games instantly with no download.`,
-    intro: `Play free racing games online on ${SITE_NAME}. Speed through tracks, drift around turns, and take on browser-based driving challenges instantly.`,
-    secondary: 'From arcade racing to stunt games, these titles are built for fast sessions on desktop, tablet, and mobile.',
-    whyTitle: 'Why Play Racing Games?',
-    whyBody: 'Racing games are perfect for browser play because they are easy to jump into, skill-based, and fun to replay as you improve your time.',
-    categorySlug: 'racing',
-  },
-  'free-shooting-games': {
-    slug: 'free-shooting-games',
-    title: 'Free Shooting Games Online',
-    description: `Play free shooting games online on ${SITE_NAME}. Discover sniper, survival, and arcade shooter browser games with instant access.`,
-    intro: `Play free shooting games online on ${SITE_NAME}. Take on browser shooter challenges with target practice, arena battles, survival runs, and more.`,
-    secondary: 'These games are built for quick reaction-based play on desktop and mobile, with no download required.',
-    whyTitle: 'Why Play Shooting Games?',
-    whyBody: 'Shooting games combine reflexes, accuracy, and replayability, which makes them a strong match for short browser sessions.',
-    categorySlug: 'shooting',
-  },
-  'free-arcade-games': {
-    slug: 'free-arcade-games',
-    title: 'Free Arcade Games Online',
-    description: `Play free arcade games online on ${SITE_NAME}. Enjoy high-score browser games, reflex challenges, and instant-play classics.`,
-    intro: `Play free arcade games online on ${SITE_NAME}. Browse quick browser challenges built around timing, score chasing, and classic pick-up-and-play fun.`,
-    secondary: 'Arcade games work especially well for short sessions, whether you are playing on desktop, tablet, or mobile.',
-    whyTitle: 'Why Play Arcade Games?',
-    whyBody: 'Arcade games are simple to start and hard to put down, with fast rounds and strong replay value that fit browser play perfectly.',
-    categorySlug: 'arcade',
-  },
   'free-2-player-games': {
     slug: 'free-2-player-games',
     title: 'Free 2 Player Games Online',
     description: `Play free 2 player games online on ${SITE_NAME}. Enjoy browser games for versus matches, co-op play, and quick shared sessions.`,
     intro: `Play free 2 player games online on ${SITE_NAME}. Choose browser games built for local competition, co-op challenges, and quick shared fun.`,
     secondary: 'These instant-play games are ideal for friends, siblings, or anyone who wants to jump into a quick multiplayer round together.',
-    whyTitle: 'Why Play 2 Player Games?',
-    whyBody: '2 player games are easy to share and fun to replay, making them especially effective on devices where you want immediate side-by-side action.',
-    categorySlug: '2-player',
   },
   'free-mobile-games': {
     slug: 'free-mobile-games',
@@ -208,18 +129,6 @@ export const LANDING_PAGE_CONFIGS: Record<string, LandingPageConfig> = {
     description: `Play free mobile games online on ${SITE_NAME}. Enjoy browser games that work smoothly on phones and tablets with no download needed.`,
     intro: `Play free mobile games online on ${SITE_NAME}. Our browser-based collection works across phones and tablets, so you can start instantly without visiting an app store.`,
     secondary: 'Explore action, puzzle, racing, arcade, and casual games designed for quick sessions and easy touch-friendly play in modern mobile browsers.',
-    whyTitle: 'Why Play Mobile Browser Games?',
-    whyBody: 'Mobile browser games are convenient because they start quickly, do not need storage space, and let you jump into a game from almost any device.',
-  },
-  'free-io-games': {
-    slug: 'free-io-games',
-    title: 'Free IO Games Online',
-    description: `Play free IO games online on ${SITE_NAME}. Discover fast multiplayer browser games with survival, arena battles, and leaderboard action.`,
-    intro: `Play free IO games online on ${SITE_NAME}. Jump into fast browser-based multiplayer games with competitive matches, survival mechanics, and quick restarts.`,
-    secondary: 'IO games are built for instant replay and easy sharing, whether you are chasing a high score or battling for control of the arena.',
-    whyTitle: 'Why Play IO Games?',
-    whyBody: 'IO games are simple to learn, highly replayable, and ideal for quick browser sessions with a competitive edge.',
-    categorySlug: 'io',
   },
 };
 
@@ -242,170 +151,21 @@ export function getCategorySeo(category: Pick<Category, 'slug' | 'name' | 'descr
 }
 
 export function getGameSeo(game: GameWithCategories) {
-  const primaryCategory = game.categories[0];
-  const categoryLabel = normalizeCategoryLabel(primaryCategory?.name ?? 'Browser', primaryCategory?.slug);
-  const description = game.description?.trim();
-  const tags = game.tags.filter(Boolean).slice(0, 5);
-  const tagText = formatList(tags);
-  const aboutBody = description
-    ? `${ensureSentence(description)} ${game.title} works directly in your browser, so you can play on desktop, tablet, and mobile without downloading anything.`
-    : `${game.title} is a free online ${categoryLabel.toLowerCase()} game on ${SITE_NAME}. It is designed for instant browser play on desktop, tablet, and mobile with no download required.`;
-
-  const seoDescription = trimToLength(
-    description
-      ? `${stripTrailingPunctuation(description)} Play ${game.title} online for free on ${SITE_NAME} with no download on desktop or mobile.`
-      : `Play ${game.title} online for free on ${SITE_NAME}. Enjoy this ${categoryLabel.toLowerCase()} browser game instantly with no download on desktop or mobile.`,
-    165
-  );
-
+  const intro = game.description || `Play ${game.title} in your browser on ${SITE_NAME}.`;
   return {
     title: `Play ${game.title} Online Free`,
-    description: seoDescription,
     h1: `Play ${game.title} Online`,
-    intro: description
-      ? `${ensureSentence(description)} Play instantly in your browser on desktop, tablet, or mobile.`
-      : `Play ${game.title} online for free on ${SITE_NAME}. This ${categoryLabel.toLowerCase()} browser game launches instantly with no download on desktop, tablet, or mobile.`,
-    aboutHeading: `About ${game.title}`,
-    aboutBody,
-    reviewHeading: `${game.title} Review`,
-    reviewBody: buildReviewBody(game.title, categoryLabel, tagText, description),
-    howToPlayHeading: `How to Play ${game.title}`,
-    howToPlayBody: game.instructions?.trim()
-      ? `Use the controls below to jump in quickly and work through each challenge. ${getCategoryStrategyTip(primaryCategory?.slug)}`
-      : `Jump in instantly and learn each round as you play. ${getCategoryStrategyTip(primaryCategory?.slug)}`,
-    controlsHeading: 'Controls',
-    controlItems: getControlItems(game.instructions),
-    strategyHeading: `${game.title} Tips`,
-    strategyItems: getStrategyItems(game.title, primaryCategory?.slug, tags),
-    bestForHeading: `Who Should Play ${game.title}?`,
-    bestForItems: getBestForItems(categoryLabel, tags),
-    whyHeading: `Why Play ${game.title} on ${SITE_NAME}?`,
-    whyPlayItems: [
-      'Free to play online',
-      'No download needed',
-      'Works in modern browsers',
-      'Playable on desktop and mobile',
-    ],
+    description: intro.length > 165 ? intro.slice(0, 164).replace(/\s+\S*$/, '') + '…' : intro,
+    intro,
   };
 }
 
 export function getLandingPageConfig(slug: string) {
-  return LANDING_PAGE_CONFIGS[slug];
-}
-
-function getControlItems(instructions?: string | null) {
-  const normalized = instructions
-    ?.split(/\n+/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  if (normalized && normalized.length > 0) {
-    return normalized.slice(0, 6);
-  }
-
-  return ['Mouse click, keyboard, or tap controls based on the game mode and your device.'];
-}
-
-function buildReviewBody(title: string, categoryLabel: string, tagText: string, description?: string | null) {
-  const base = description
-    ? `Based on its objective and controls, ${title} is best approached as a ${categoryLabel.toLowerCase()} game where the first few rounds are useful for learning the pace, scoring rules, and failure points.`
-    : `${title} is a quick browser-based ${categoryLabel.toLowerCase()} game with a simple start, short retry loop, and easy access from the game page.`;
-
-  const tagSentence = tagText
-    ? `The tagged themes here include ${tagText}, which helps players decide whether it fits the style of game they want before launching it.`
-    : `The page highlights the main category, platform, controls, and related games so players can compare it with similar browser titles.`;
-
-  return `${base} ${tagSentence} If a game does not load immediately, refreshing the page or trying a modern desktop or mobile browser usually resolves the issue.`;
-}
-
-function getStrategyItems(title: string, slug?: string, tags: string[] = []) {
-  const generic = [
-    `Start ${title} slowly for the first attempt so you can learn the objective before chasing a better score.`,
-    'Use short retries to recognize the patterns, hazards, or timing windows that matter most.',
-    'If you are playing on mobile, rotate the device or use fullscreen when the game gives you more room to react.',
-  ];
-
-  const categorySpecific: Record<string, string[]> = {
-    action: [
-      'Keep moving when enemies or obstacles appear, and avoid committing to one path too early.',
-      'Watch for repeated attack patterns before taking risky moves.',
-    ],
-    puzzle: [
-      'Look for the simplest move first, then plan one or two steps ahead before committing.',
-      'If the board gets crowded, pause and identify which pieces or colors create the biggest constraint.',
-    ],
-    racing: [
-      'Learn the track layout before pushing for speed, especially around corners and ramps.',
-      'Smooth steering usually beats sudden corrections when you are trying to improve a run.',
-    ],
-    shooting: [
-      'Prioritize accuracy over constant firing, especially when targets move or resources are limited.',
-      'Use cover, distance, or movement whenever the game gives you room to reset.',
-    ],
-    arcade: [
-      'Focus on rhythm and repeatable timing so later attempts feel more controlled.',
-      'Chase consistency before chasing a high score.',
-    ],
-    sports: [
-      'Watch the timing window for shots, passes, or swings before trying stronger moves.',
-      'Small adjustments often matter more than maximum power.',
-    ],
-    clicker: [
-      'Upgrade early systems that improve progress every round instead of spending only on short bursts.',
-      'Check whether idle rewards or multipliers become more valuable after the first few minutes.',
-    ],
-  };
-
-  const items = [...(categorySpecific[slug ?? ''] ?? []), ...generic];
-  if (tags.some((tag) => /mobile|tap|touch/i.test(tag))) {
-    items.push('Tap deliberately on smaller screens so accidental double inputs do not interrupt the run.');
-  }
-
-  return items.slice(0, 5);
-}
-
-function getBestForItems(categoryLabel: string, tags: string[] = []) {
-  const items = [
-    `Players looking for a free ${categoryLabel.toLowerCase()} game that starts quickly in the browser.`,
-    'Short play sessions during a break, commute, or quick desktop pause.',
-    'Anyone who wants to try a game without installing an app or creating an account.',
-  ];
-
-  if (tags.length > 0) {
-    items.push(`Players browsing themes like ${formatList(tags.slice(0, 3))}.`);
-  }
-
-  return items;
-}
-
-function getCategoryStrategyTip(slug?: string) {
-  return CATEGORY_STRATEGY_TIPS[slug ?? ''] ?? 'Focus on timing, learn the objective quickly, and improve with each run.';
+  return Object.hasOwn(LANDING_PAGE_CONFIGS, slug) ? LANDING_PAGE_CONFIGS[slug] : undefined;
 }
 
 function normalizeCategoryLabel(name: string, slug?: string) {
   if (slug === 'io' || name === '.IO') return 'IO';
   if (slug === '2-player') return '2 Player';
   return name;
-}
-
-function ensureSentence(value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) return '';
-  return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
-}
-
-function stripTrailingPunctuation(value: string) {
-  return value.trim().replace(/[.!?]+$/, '');
-}
-
-function trimToLength(value: string, maxLength: number) {
-  if (value.length <= maxLength) return value;
-  return `${value.slice(0, maxLength - 1).trimEnd()}…`;
-}
-
-function formatList(items: string[]) {
-  if (items.length === 0) return '';
-  if (items.length === 1) return items[0];
-  if (items.length === 2) return `${items[0]} and ${items[1]}`;
-  return `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`;
 }

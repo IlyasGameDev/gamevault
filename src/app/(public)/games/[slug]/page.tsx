@@ -12,22 +12,29 @@ import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ExternalLink, Gamepad2 } from 'lucide-react';
-import { formatNumber } from '@/lib/utils';
+import GameRating from '@/components/games/GameRating';
+import { gameFacts } from '@/lib/gameFacts';
+import { gameText } from '@/lib/gameText';
+import { canOptimizeGameImage } from '@/lib/gameImage';
 import { getGameSeo } from '@/lib/seo';
 
 export const revalidate = 3600;
 
 async function getGame(slug: string): Promise<GameWithCategories | null> {
-  const { data } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
     .from('games')
     .select('*, categories:game_categories(category:categories(*))')
     .eq('slug', slug)
     .eq('status', 'published')
-    .single();
+    .maybeSingle();
 
+  if (error) throw error;
   if (!data) return null;
   return {
     ...data,
+    title: gameText(data.title),
+    description: data.description && gameText(data.description),
+    instructions: data.instructions && gameText(data.instructions),
     categories: ((data.categories as { category: unknown }[]) ?? []).map((gc) => gc.category),
   } as GameWithCategories;
 }
@@ -45,6 +52,7 @@ async function getRelated(game: GameWithCategories): Promise<GameWithCategories[
 
   const games = ((data ?? []).map((g: Record<string, unknown>) => ({
     ...g,
+    title: gameText(String(g.title)),
     categories: ((g.categories as { category: unknown }[]) ?? []).map((gc) => gc.category),
   })) as GameWithCategories[]);
 
@@ -61,7 +69,7 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const game = await getGame(slug);
-  if (!game) return { title: 'Game Not Found' };
+  if (!game) notFound();
   const seo = getGameSeo(game);
 
   return {
@@ -92,6 +100,7 @@ export default async function GamePage({ params }: Props) {
 
   const related = await getRelated(game);
   const seo = getGameSeo(game);
+  const facts = gameFacts(game);
   const hasRating = game.rating_count > 0;
 
   const jsonLd = {
@@ -101,7 +110,7 @@ export default async function GamePage({ params }: Props) {
     url: `${SITE_URL}/games/${game.slug}`,
     image: game.thumbnail_url ?? undefined,
     description: seo.description,
-    author: game.developer ? { '@type': 'Organization', name: game.developer } : undefined,
+    author: facts.developer ? { '@type': 'Organization', name: facts.developer } : undefined,
     genre: game.categories.map((c) => c.name),
     applicationCategory: hasRating ? 'GameApplication' : undefined,
     gamePlatform: 'Web browser',
@@ -111,10 +120,7 @@ export default async function GamePage({ params }: Props) {
       price: 0,
       priceCurrency: 'USD',
     } : undefined,
-    publisher: {
-      '@type': 'Organization',
-      name: SITE_NAME,
-    },
+    mainEntityOfPage: { '@type': 'WebPage', publisher: { '@type': 'Organization', name: SITE_NAME } },
     aggregateRating: hasRating ? {
       '@type': 'AggregateRating',
       ratingValue: game.rating_avg,
@@ -151,8 +157,8 @@ export default async function GamePage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-[#10101B]">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c') }} />
 
       <div className="mx-auto max-w-[1580px] space-y-5 px-3 py-3 sm:px-4 sm:py-4">
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
@@ -175,7 +181,13 @@ export default async function GamePage({ params }: Props) {
         </div>
 
         <GameSummaryPanel game={game} seo={seo} />
-        <GameDescriptionPanel seo={seo} />
+        {(game.instructions || facts.record?.controls || facts.record?.localControls || facts.record?.tip) && (
+          <section className="space-y-3 rounded-lg border border-[#24243A] bg-[#151522] p-5 text-[#CAC7DA] sm:p-7">
+            <h2 className="text-2xl font-black text-white">How to play {game.title}</h2>
+            <p className="whitespace-pre-line leading-7">{facts.record?.controls ?? facts.record?.localControls ?? game.instructions}</p>
+            {facts.record?.tip && <p className="leading-7">{facts.record.tip}</p>}
+          </section>
+        )}
 
         {related.length > 0 && (
           <section className="space-y-3 xl:hidden">
@@ -194,6 +206,7 @@ export default async function GamePage({ params }: Props) {
 }
 
 function GameSummaryPanel({ game, seo }: { game: GameWithCategories; seo: ReturnType<typeof getGameSeo> }) {
+  const facts = gameFacts(game);
   const tags = uniqueLabels([
     ...game.categories.map((category) => category.name),
     ...game.tags,
@@ -221,27 +234,24 @@ function GameSummaryPanel({ game, seo }: { game: GameWithCategories; seo: Return
         </div>
 
         <dl className="space-y-3 text-base sm:text-lg">
-          {game.developer && (
+          {facts.developer && (
             <InfoRow label="Developer">
-              {game.developer_url ? (
-                <a href={game.developer_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-black text-[#A996FF] hover:text-white">
-                  {game.developer} <ExternalLink size={14} />
+              {facts.developerUrl ? (
+                <a href={facts.developerUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-black text-[#A996FF] hover:text-white">
+                  {facts.developer} <ExternalLink size={14} />
                 </a>
               ) : (
-                <span className="font-black text-[#A996FF]">{game.developer}</span>
+                <span className="font-black text-[#A996FF]">{facts.developer}</span>
               )}
             </InfoRow>
           )}
-          <InfoRow label="Rating">
-            {game.rating_count > 0 ? (
-              <span><strong className="text-white">{game.rating_avg.toFixed(1)}</strong> <span className="text-sm text-[#D8D6E8]">({formatNumber(game.rating_count)} votes)</span></span>
-            ) : (
-              <span className="text-[#D8D6E8]">Not rated yet</span>
-            )}
-          </InfoRow>
-          {game.published_at && <InfoRow label="Released">{formatRelease(game.published_at)}</InfoRow>}
-          <InfoRow label="Technology">HTML5</InfoRow>
-          <InfoRow label="Platforms">Browser (desktop, mobile, tablet)</InfoRow>
+          {facts.distributor && <InfoRow label="Distributor">
+            {facts.source ? <a className="text-[#A996FF]" href={facts.source}>{facts.distributor}</a> : facts.distributor}
+          </InfoRow>}
+          <InfoRow label="Rating"><GameRating game={game} /></InfoRow>
+          {game.published_at && <InfoRow label="Added to YoPlayables">{formatRelease(game.published_at)}</InfoRow>}
+          <InfoRow label="Platform">{facts.record ? (facts.record.mobile ? 'Desktop and mobile browsers' : 'Desktop browser') : 'Web browser'}</InfoRow>
+          {facts.record?.localControls && <InfoRow label="Play mode">Local two-player</InfoRow>}
         </dl>
 
         {tags.length > 0 && (
@@ -261,75 +271,6 @@ function GameSummaryPanel({ game, seo }: { game: GameWithCategories; seo: Return
 
       <div className="hidden border-l border-[#24243A] p-5 lg:block">
         <div className="h-full min-h-[300px] rounded-none border border-[#2C2B42] bg-[#171725]" aria-hidden="true" />
-      </div>
-    </section>
-  );
-}
-
-function GameDescriptionPanel({ seo }: { seo: ReturnType<typeof getGameSeo> }) {
-  return (
-    <section className="space-y-6 rounded-lg border border-[#24243A] bg-[#151522] p-5 text-[#B8B6C9] sm:p-7">
-      <div className="space-y-3">
-        <h2 className="text-2xl font-black text-white">{seo.aboutHeading}</h2>
-        <p className="max-w-6xl text-base leading-8 sm:text-lg">{seo.aboutBody}</p>
-      </div>
-
-      <div className="space-y-3">
-        <h2 className="text-2xl font-black text-white">{seo.reviewHeading}</h2>
-        <p className="max-w-6xl text-base leading-8 sm:text-lg">{seo.reviewBody}</p>
-      </div>
-
-      <div className="space-y-3">
-        <h2 className="text-2xl font-black text-white">{seo.howToPlayHeading}</h2>
-        <p className="max-w-6xl text-base leading-8 sm:text-lg">{seo.howToPlayBody}</p>
-      </div>
-
-      <div className="space-y-3">
-        <h2 className="text-2xl font-black text-white">{seo.controlsHeading}</h2>
-        <ul className="space-y-2 text-base leading-8 sm:text-lg">
-          {seo.controlItems.map((item) => (
-            <li key={item} className="flex gap-3">
-              <span className="mt-3 h-2 w-2 shrink-0 rounded-full bg-[#A996FF]" aria-hidden="true" />
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="space-y-3">
-        <h2 className="text-2xl font-black text-white">{seo.whyHeading}</h2>
-        <ul className="space-y-2 text-base leading-8 sm:text-lg">
-          {seo.whyPlayItems.map((item) => (
-            <li key={item} className="flex gap-3">
-              <span className="mt-3 h-2 w-2 shrink-0 rounded-full bg-[#A996FF]" aria-hidden="true" />
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="space-y-3">
-        <h2 className="text-2xl font-black text-white">{seo.strategyHeading}</h2>
-        <ul className="space-y-2 text-base leading-8 sm:text-lg">
-          {seo.strategyItems.map((item) => (
-            <li key={item} className="flex gap-3">
-              <span className="mt-3 h-2 w-2 shrink-0 rounded-full bg-[#A996FF]" aria-hidden="true" />
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="space-y-3">
-        <h2 className="text-2xl font-black text-white">{seo.bestForHeading}</h2>
-        <ul className="space-y-2 text-base leading-8 sm:text-lg">
-          {seo.bestForItems.map((item) => (
-            <li key={item} className="flex gap-3">
-              <span className="mt-3 h-2 w-2 shrink-0 rounded-full bg-[#A996FF]" aria-hidden="true" />
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
       </div>
     </section>
   );
@@ -357,7 +298,7 @@ function PlayNextCard({ game }: { game: GameWithCategories }) {
     <Link
       href={`/games/${game.slug}`}
       className="group relative block aspect-[16/9] overflow-hidden rounded-lg bg-[#202035] outline-none transition-transform hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-[#9B8CFF]"
-      aria-label={`Play ${game.title}`}
+      aria-label={`Play ${gameText(game.title)}`}
       title={game.title}
     >
       {game.thumbnail_url ? (
@@ -365,7 +306,7 @@ function PlayNextCard({ game }: { game: GameWithCategories }) {
           src={game.thumbnail_url}
           alt={game.title}
           fill
-          unoptimized
+          unoptimized={!canOptimizeGameImage(game.thumbnail_url)}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           sizes="170px"
         />

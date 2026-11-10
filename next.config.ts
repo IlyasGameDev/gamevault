@@ -29,7 +29,8 @@ const nextConfig: NextConfig = {
   },
   images: {
     minimumCacheTTL: 86400,
-    formats: ['image/webp'],
+    formats: ['image/avif', 'image/webp'],
+    qualities: [65, 75],
     deviceSizes: [360, 414, 640, 768, 1024, 1280, 1536],
     imageSizes: [32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
@@ -46,11 +47,13 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      {
-        source: '/free-puzzle-games',
-        destination: '/categories/puzzle',
+      ...['puzzle', 'action', 'racing', 'shooting', 'arcade', 'io'].map((genre) => ({
+        source: `/free-${genre}-games`,
+        destination: `/categories/${genre}`,
         permanent: true,
-      },
+      })),
+      { source: '/free-online-games', destination: '/', permanent: true },
+      { source: '/free-browser-games', destination: '/games', permanent: true },
     ];
   },
   async headers() {

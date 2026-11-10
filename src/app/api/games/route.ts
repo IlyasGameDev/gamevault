@@ -1,9 +1,11 @@
+import { refreshCatalog } from '@/lib/refreshCatalog';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { gameSchema } from '@/lib/validations';
 import slugify from 'slugify';
-import { GAMES_PER_PAGE } from '@/lib/constants';
+import { getCatalogPage } from '@/lib/games';
+import { archiveSort, GAMES_PER_PAGE } from '@/lib/constants';
 import { submitGameUrlsToIndexNow } from '@/lib/indexNow';
 import { sanitize } from '@/lib/utils';
 
@@ -16,37 +18,9 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('q') ?? '';
     const category = searchParams.get('category') ?? '';
     const limit = Math.min(parseInt(searchParams.get('limit') ?? String(GAMES_PER_PAGE)), 200);
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
-
-    let query = supabaseAdmin
-      .from('games')
-      .select('*, categories:game_categories(category:categories(*))', { count: 'exact' })
-      .range(from, to);
-
-    if (status !== 'all') query = query.eq('status', status);
-    if (search) query = query.ilike('title', `%${search}%`);
-    if (sort === 'newest') query = query.order('published_at', { ascending: false });
-    else if (sort === 'popular') query = query.order('play_count', { ascending: false });
-    else if (sort === 'rated') query = query.order('rating_avg', { ascending: false });
-    else query = query.order('title', { ascending: true });
-
-    const { data, count, error } = await query;
-    if (error) throw error;
-
-    let games = (data ?? []).map((g: Record<string, unknown>) => ({
-      ...g,
-      categories: ((g.categories as { category: unknown }[]) ?? []).map((gc) => gc.category),
-    }));
-
-    if (category) {
-      games = games.filter((g) =>
-        (g.categories as { slug: string }[]).some((c) => c.slug === category)
-      );
-    }
-
+    const { games, count } = await getCatalogPage({ page, limit, sort: archiveSort(sort), category, search }, status);
     return NextResponse.json({ data: games, count, page });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch games' }, { status: 500 });
   }
 }
@@ -89,6 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (game.status === 'published') {
+      refreshCatalog([game.slug]);
       await submitGameUrlsToIndexNow([game.slug]);
     }
 

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import GamesClient from './GamesClient';
-import { GAMES_PER_PAGE } from '@/lib/constants';
+import { archiveSort, GAMES_PER_PAGE } from '@/lib/constants';
 import { getPublishedGamesPage } from '@/lib/games';
 
 export const metadata: Metadata = {
@@ -27,14 +27,9 @@ function getParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-function normalizeSort(sort: string | undefined) {
-  if (sort === 'popular' || sort === 'rated' || sort === 'alpha') return sort;
-  return 'newest';
-}
-
 export default async function GamesPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const sort = normalizeSort(getParam(params.sort));
+  const sort = archiveSort(getParam(params.sort));
   const hasClientFilters = Boolean(getParam(params.q) || getParam(params.category));
   const initial = hasClientFilters
     ? { games: [], count: 0 }

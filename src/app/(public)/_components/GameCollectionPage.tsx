@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import GameGrid from '@/components/games/GameGrid';
 import GameIcon, { GameIconType } from '@/components/ui/GameIcon';
@@ -51,7 +52,9 @@ export default async function GameCollectionPage({ config }: { config: GameColle
         </div>
       </section>
 
-      <GameGrid games={games} />
+      {config.sort === 'rated' && games.length === 0 ? (
+        <p className="text-[#D8D8D8]">No games have received a player rating yet. <Link className="underline" href="/games">Browse games to play and rate</Link>.</p>
+      ) : <GameGrid games={games} />}
     </main>
   );
 }
