@@ -1,4 +1,5 @@
 import { SITE_NAME } from '@/lib/constants';
+import { gameFacts } from '@/lib/gameFacts';
 import { Category, GameWithCategories } from '@/lib/types/database';
 
 type CategorySeoOverride = {
@@ -151,7 +152,7 @@ export function getCategorySeo(category: Pick<Category, 'slug' | 'name' | 'descr
 }
 
 export function getGameSeo(game: GameWithCategories) {
-  const intro = game.description || `Play ${game.title} in your browser on ${SITE_NAME}.`;
+  const intro = gameFacts(game).record?.summary || game.description || `Play ${game.title} in your browser on ${SITE_NAME}.`;
   return {
     title: `Play ${game.title} Online Free`,
     h1: `Play ${game.title} Online`,

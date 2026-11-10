@@ -20,17 +20,21 @@ export default function DeferredNavbarAuthMenu({
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const load = () => setReady(true);
+    const desktop = window.matchMedia('(min-width: 768px)');
+    const load = () => {
+      if (placement === 'mobile' || desktop.matches) setReady(true);
+    };
+    desktop.addEventListener('change', load);
     if (document.readyState === 'complete') {
-      const idle = window.requestIdleCallback?.(load, { timeout: 1200 });
-      return () => {
-        if (idle) window.cancelIdleCallback?.(idle);
-      };
+      load();
+    } else {
+      window.addEventListener('load', load, { once: true });
     }
-
-    window.addEventListener('load', load, { once: true });
-    return () => window.removeEventListener('load', load);
-  }, []);
+    return () => {
+      desktop.removeEventListener('change', load);
+      window.removeEventListener('load', load);
+    };
+  }, [placement]);
 
   if (!ready) {
     return placement === 'desktop' ? <DesktopFallback /> : <MobileFallback onNavigate={onNavigate} />;

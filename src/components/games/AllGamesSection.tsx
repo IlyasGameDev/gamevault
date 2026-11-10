@@ -1,7 +1,9 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import GameGrid from './GameGrid';
+import dynamic from 'next/dynamic';
 import { GameWithCategories } from '@/lib/types/database';
+
+const GameGrid = dynamic(() => import('./GameGrid'));
 
 export default function AllGamesSection() {
   const [games, setGames] = useState<GameWithCategories[]>([]);
