@@ -3,13 +3,12 @@ import { supabaseAdmin } from '@/lib/supabase/admin';
 import { GAMES_PER_PAGE, SITE_URL } from '@/lib/constants';
 import { LANDING_PAGE_CONFIGS } from '@/lib/seo';
 import { getCategoriesWithPublishedGames } from '@/lib/categories';
-import { getPublishedGameCount } from '@/lib/games';
+export const revalidate = 300;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [games, categories, gameCount] = await Promise.all([
+  const [games, categories] = await Promise.all([
     getPublishedGamesForSitemap(),
     getCategoriesWithPublishedGames(),
-    getPublishedGameCount(),
   ]);
 
   const gameRoutes = (games ?? []).map((g) => ({
@@ -32,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const archiveRoutes = Array.from(
-    { length: Math.max(0, Math.ceil(gameCount / GAMES_PER_PAGE) - 1) },
+    { length: Math.max(0, Math.ceil(games.length / GAMES_PER_PAGE) - 1) },
     (_, index) => ({
       url: `${SITE_URL}/games/page/${index + 2}`,
       changeFrequency: 'weekly' as const,
@@ -42,6 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     { url: SITE_URL, changeFrequency: 'daily', priority: 1 },
+    { url: `${SITE_URL}/categories`, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${SITE_URL}/games`, changeFrequency: 'daily', priority: 0.9 },
     { url: `${SITE_URL}/popular-games`, changeFrequency: 'daily', priority: 0.85 },
     { url: `${SITE_URL}/new-games`, changeFrequency: 'daily', priority: 0.85 },
@@ -60,20 +60,23 @@ async function getPublishedGamesForSitemap() {
   const batchSize = 1000;
   const games: { slug: string; updated_at: string }[] = [];
 
-  for (let from = 0; ; from += batchSize) {
-    const { data, error } = await supabaseAdmin
+  let after: string | undefined;
+  while (true) {
+    let query = supabaseAdmin
       .from('games')
       .select('slug, updated_at')
       .eq('status', 'published')
       .order('slug', { ascending: true })
-      .range(from, from + batchSize - 1);
+      .limit(batchSize);
+    if (after) query = query.gt('slug', after);
+    const { data, error } = await query;
 
     if (error) throw error;
     if (!data?.length) break;
 
     games.push(...data);
 
-    if (data.length < batchSize) break;
+    after = data[data.length - 1].slug;
   }
 
   return games;

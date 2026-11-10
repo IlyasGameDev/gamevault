@@ -24,9 +24,9 @@ export default function AboutPage() {
       </section>
 
       <section>
-        <h2 className="text-xl font-bold text-white">What matters to us</h2>
+        <h2 className="text-xl font-bold text-white">Where game details come from</h2>
         <p className="mt-3">
-          We care about fast loading pages, clear game information, and a browsing experience that feels lightweight and enjoyable. We aim to keep the platform simple so the focus stays on playing.
+          Game pages identify the distributor separately from the developer when the credit is available. Our mobile and local two-player collections use controls and device support from the linked game records. Player ratings come from signed-in players.
         </p>
       </section>
 

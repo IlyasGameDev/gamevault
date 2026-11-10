@@ -1,3 +1,4 @@
+import { refreshCatalog } from '@/lib/refreshCatalog';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabaseAdmin.from('categories').insert(parsed.data).select().single();
     if (error) throw error;
 
+    refreshCatalog();
     return NextResponse.json({ data }, { status: 201 });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to create category';

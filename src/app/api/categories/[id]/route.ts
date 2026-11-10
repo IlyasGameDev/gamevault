@@ -1,3 +1,4 @@
+import { refreshCatalog } from '@/lib/refreshCatalog';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
@@ -26,6 +27,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
     const { data, error } = await supabaseAdmin
       .from('categories').update(parsed.data).eq('id', id).select().single();
     if (error) throw error;
+    refreshCatalog();
     return NextResponse.json({ data });
   } catch (err: unknown) {
     return NextResponse.json({ error: err instanceof Error ? err.message : 'Failed' }, { status: 500 });
@@ -50,6 +52,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
 
     const { error } = await supabaseAdmin.from('categories').delete().eq('id', id);
     if (error) throw error;
+    refreshCatalog();
     return NextResponse.json({ message: 'Category deleted' });
   } catch (err: unknown) {
     return NextResponse.json({ error: err instanceof Error ? err.message : 'Failed' }, { status: 500 });

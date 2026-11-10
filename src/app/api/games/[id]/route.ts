@@ -1,3 +1,4 @@
+import { refreshCatalog } from '@/lib/refreshCatalog';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
@@ -78,6 +79,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (game.status === 'published') {
       changedPublishedUrls.add(game.slug);
     }
+    refreshCatalog(Array.from(changedPublishedUrls));
     await submitGameUrlsToIndexNow(Array.from(changedPublishedUrls));
 
     return NextResponse.json({ data: game });
@@ -102,6 +104,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     if (error) throw error;
 
     if (existing?.status === 'published' && existing.slug) {
+      refreshCatalog([existing.slug]);
       await submitGameUrlsToIndexNow([existing.slug]);
     }
 

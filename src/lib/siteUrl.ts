@@ -27,7 +27,8 @@ export function isCanonicalHost(host: string) {
 }
 
 export function shouldRedirectToCanonicalHost(host: string) {
-  return isVercelHost(host) && !isCanonicalHost(host);
+  const bareHost = new URL(PRODUCTION_SITE_URL).hostname.replace(/^www\./, '');
+  return normalizeHost(host) === bareHost || (isVercelHost(host) && !isCanonicalHost(host));
 }
 
 export function getProductionSiteUrl() {

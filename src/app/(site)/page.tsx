@@ -1,3 +1,4 @@
+import { SITE_NAME, SITE_URL } from '@/lib/constants';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
@@ -57,6 +58,10 @@ export default async function HomePage() {
 
   return (
     <main className="mx-auto max-w-7xl space-y-12 px-4 py-6 sm:px-6 sm:py-8">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_NAME, url: SITE_URL,
+      }).replace(/</g, '\\u003c') }} />
+
       {heroGames.length > 0 && <FeaturedCarousel games={heroGames} />}
 
       <section className="rounded-3xl border border-[#262626] bg-[#161616] px-5 py-6 sm:px-8 sm:py-8">
@@ -69,7 +74,7 @@ export default async function HomePage() {
             Choose a game, click play, and jump straight into desktop, tablet, or mobile gameplay. The homepage highlights trending games, new browser games, top-rated picks, and mobile-friendly titles so players can find something fast whether they want a short break or a longer session.
           </p>
           <p className="text-base leading-7 text-[#B8B8B8] sm:text-lg">
-            Browse by category to discover racing challenges, <Link href="/categories/puzzle" className="font-bold text-[#BDB5FF] hover:text-white">free puzzle games online</Link>, arcade score chases, sports games, 2 player games, and multiplayer experiences. New games are added regularly, and every listed title is selected for instant play in modern web browsers.
+            Browse by category to discover racing challenges, <Link href="/categories/puzzle" className="font-bold text-[#BDB5FF] hover:text-white">free puzzle games online</Link>, arcade score chases, sports games, <Link href="/free-2-player-games" className="font-bold text-[#BDB5FF]">two-player games</Link>, and <Link href="/free-mobile-games" className="font-bold text-[#BDB5FF]">mobile games</Link>. New games are added regularly, and every listed title is selected for instant play in modern web browsers.
           </p>
           <p className="text-base leading-7 text-[#B8B8B8] sm:text-lg">
             YoPlayables is built for players who want free online games without waiting on app stores, launchers, or large updates. Open a game page, start playing, and share your favorites with friends from one simple browser-based game library.
@@ -145,7 +150,7 @@ async function PopularGamesSection() {
 
   return (
     <section className="space-y-4 [contain-intrinsic-size:760px] [content-visibility:auto]">
-      <SectionHeader title="Popular Games" href="/top-rated-games" linkLabel="See all top-rated games" icon="popular" />
+      <SectionHeader title="Top Rated Games" href="/top-rated-games" linkLabel="See all top-rated games" icon="popular" />
       <GameGrid games={topRated} />
     </section>
   );
@@ -157,7 +162,7 @@ function PopularGamesFallback() {
       <div className="flex items-center justify-between">
         <p className="flex items-center gap-2 text-xl font-extrabold text-white">
           <GameIcon type="popular" size={21} />
-          Popular Games
+          Top Rated Games
         </p>
         <Link href="/top-rated-games" className="flex items-center gap-1 text-sm font-bold text-[#A8A8A8] transition-colors hover:text-white">
           See all top-rated games <ChevronRight size={16} className="text-[#6C5CFF]" />

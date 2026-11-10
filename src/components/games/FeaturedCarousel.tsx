@@ -1,3 +1,5 @@
+import { gameText } from '@/lib/gameText';
+import { canOptimizeGameImage } from '@/lib/gameImage';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Gamepad2, Play } from 'lucide-react';
@@ -37,7 +39,7 @@ function GameTile({
 }) {
   const isLarge = size === 'large';
   const imageSrc = game.cover_url ?? game.thumbnail_url;
-  const isThumbnailImage = !game.cover_url && Boolean(game.thumbnail_url);
+  const title = gameText(game.title);
 
   return (
     <Link
@@ -49,12 +51,12 @@ function GameTile({
       {imageSrc ? (
         <Image
           src={imageSrc}
-          alt={game.title}
+          alt={title}
           fill
-          priority={priority}
+          preload={priority}
           fetchPriority={priority ? 'high' : undefined}
-          quality={priority ? 75 : 65}
-          unoptimized={isThumbnailImage}
+          quality={65}
+          unoptimized={!canOptimizeGameImage(imageSrc)}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           sizes={isLarge ? '(max-width: 1024px) 100vw, 60vw' : '(max-width: 1024px) 50vw, 20vw'}
         />
@@ -76,11 +78,11 @@ function GameTile({
             {isLarge && <p className="mb-1 text-xs font-bold uppercase text-[#9B8CFF]">Featured</p>}
             {isLarge ? (
               <p className="truncate text-2xl font-extrabold text-white sm:text-3xl">
-                {game.title}
+                {title}
               </p>
             ) : (
               <p className="truncate text-sm font-extrabold text-white sm:text-base">
-                {game.title}
+                {title}
               </p>
             )}
           </div>

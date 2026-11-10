@@ -4,20 +4,15 @@ import Link from 'next/link';
 import GameGrid from '@/components/games/GameGrid';
 import GameIcon from '@/components/ui/GameIcon';
 import { getCategoriesWithPublishedGames } from '@/lib/categories';
-import { getHomepageGames } from '@/lib/games';
+import { gameFacts, supplierRecords } from '@/lib/gameFacts';
 import { getLandingPageConfig, LANDING_PAGE_CONFIGS } from '@/lib/seo';
 import { supabaseAdmin } from '@/lib/supabase/admin';
-import { Category, GameWithCategories } from '@/lib/types/database';
+import { GameWithCategories } from '@/lib/types/database';
 
 export const revalidate = 3600;
 
 type Props = {
   params: Promise<{ slug: string }>;
-};
-
-type CategoryLandingBundle = {
-  category: Category;
-  games: GameWithCategories[];
 };
 
 export async function generateStaticParams() {
@@ -55,11 +50,21 @@ export default async function LandingPage({ params }: Props) {
 
   if (!config) notFound();
 
-  const [popularGames, categories, categoryBundle] = await Promise.all([
-    getHomepageGames('popular', 12),
+  const local = slug === 'free-2-player-games';
+  const records = supplierRecords.filter((entry) => local ? !!entry.localControls : entry.mobile);
+  const [categories, result] = await Promise.all([
     getCategoriesWithPublishedGames(12),
-    config.categorySlug ? getCategoryLandingBundle(config.categorySlug) : Promise.resolve(null),
+    supabaseAdmin.from('games').select('*, categories:game_categories(category:categories(*))')
+      .eq('status', 'published').in('slug', records.map((entry) => entry.slug)).order('title'),
   ]);
+  if (result.error) throw result.error;
+  const picks = result.data.map((game) => ({
+    ...game,
+    categories: game.categories.map((entry: { category: unknown }) => entry.category),
+  }) as GameWithCategories).filter((game) => {
+    const record = gameFacts(game).record;
+    return record && (local ? !!record.localControls : record.mobile);
+  });
 
   return (
     <main className="mx-auto max-w-7xl space-y-10 px-4 py-8 sm:px-6">
@@ -71,16 +76,13 @@ export default async function LandingPage({ params }: Props) {
         </div>
       </section>
 
-      {categoryBundle && categoryBundle.games.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-2xl font-extrabold text-white">Top {categoryBundle.category.name} Games</h2>
-          <GameGrid games={categoryBundle.games} />
-        </section>
-      )}
-
       <section className="space-y-4">
-        <h2 className="text-2xl font-extrabold text-white">Popular Browser Games</h2>
-        <GameGrid games={popularGames} />
+        <h2 className="text-2xl font-extrabold text-white">{local ? 'Play together on one device' : 'Games with mobile support'}</h2>
+        <GameGrid games={picks} />
+        {local && <ul className="space-y-3 text-[#D8D8D8]">{picks.map((game) => (
+          <li key={game.id}><Link className="font-bold text-[#BDB5FF]" href={`/games/${game.slug}`}>{game.title}</Link>
+            {' · '}{gameFacts(game).record?.localControls}</li>
+        ))}</ul>}
       </section>
 
       <section className="space-y-4">
@@ -99,36 +101,6 @@ export default async function LandingPage({ params }: Props) {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-[#252525] bg-[#141414] px-6 py-7 sm:px-8">
-        <div className="max-w-4xl space-y-3">
-          <h2 className="text-2xl font-extrabold text-white">{config.whyTitle}</h2>
-          <p className="text-base leading-7 text-[#C9C9C9] sm:text-lg">{config.whyBody}</p>
-        </div>
-      </section>
     </main>
   );
-}
-
-async function getCategoryLandingBundle(slug: string): Promise<CategoryLandingBundle | null> {
-  const { data: category } = await supabaseAdmin.from('categories').select('*').eq('slug', slug).single();
-
-  if (!category) return null;
-
-  const { data } = await supabaseAdmin
-    .from('game_categories')
-    .select('game:games(*, categories:game_categories(category:categories(*)))')
-    .eq('category_id', category.id);
-
-  const games = ((data ?? [])
-    .map((entry: Record<string, unknown>) => entry.game)
-    .filter((game): game is Record<string, unknown> => !!game && (game as Record<string, unknown>).status === 'published')
-    .map((game) => ({
-      ...game,
-      categories: ((game.categories as { category: unknown }[]) ?? []).map((item) => item.category),
-    }))) as GameWithCategories[];
-
-  return {
-    category,
-    games: games.slice(0, 12),
-  };
 }

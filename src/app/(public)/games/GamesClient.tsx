@@ -7,7 +7,7 @@ import CategoryFilter from '@/components/games/CategoryFilter';
 import { Search } from 'lucide-react';
 import { GameWithCategories } from '@/lib/types/database';
 import { useDebounce } from '@/hooks/useDebounce';
-import { GAMES_PER_PAGE, SORT_OPTIONS } from '@/lib/constants';
+import { archiveHref, archiveSort, GAMES_PER_PAGE, SORT_OPTIONS, type SortOption } from '@/lib/constants';
 
 type BrowseContentProps = {
   initialGames: GameWithCategories[];
@@ -28,8 +28,7 @@ function BrowseContent({
   const router = useRouter();
   const pathname = usePathname();
 
-  const rawSort = searchParams.get('sort') ?? 'newest';
-  const sort = SORT_OPTIONS.some((option) => option.value === rawSort) ? rawSort : 'newest';
+  const sort = archiveSort(searchParams.get('sort'));
   const category = searchParams.get('category') ?? '';
   const q = searchParams.get('q') ?? '';
 
@@ -159,7 +158,7 @@ function BrowseContent({
 
       <CategoryFilter />
       <GameGrid games={games} loading={loading} />
-      {!q && !category && total > GAMES_PER_PAGE && <ArchiveLinks total={total} />}
+      {!q && !category && total > GAMES_PER_PAGE && <ArchiveLinks total={total} sort={sort} />}
 
       {loadingMore && (
         <div className="flex justify-center py-6">
@@ -171,7 +170,7 @@ function BrowseContent({
   );
 }
 
-function ArchiveLinks({ total }: { total: number }) {
+function ArchiveLinks({ total, sort }: { total: number; sort: SortOption }) {
   const pageCount = Math.ceil(total / GAMES_PER_PAGE);
   const visiblePages = Array.from({ length: Math.min(pageCount, 8) }, (_, index) => index + 1);
 
@@ -181,7 +180,7 @@ function ArchiveLinks({ total }: { total: number }) {
       {visiblePages.map((page) => (
         <Link
           key={page}
-          href={page === 1 ? '/games' : `/games/page/${page}`}
+          href={archiveHref(page, sort)}
           className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-[#2A2A2A] px-3 text-sm font-black text-[#D8D8E8] transition-colors hover:border-[#6C5CFF]/70 hover:text-white"
         >
           {page}
@@ -189,7 +188,7 @@ function ArchiveLinks({ total }: { total: number }) {
       ))}
       {pageCount > visiblePages.length && (
         <Link
-          href={`/games/page/${visiblePages.length + 1}`}
+          href={archiveHref(visiblePages.length + 1, sort)}
           className="inline-flex h-9 items-center rounded-full border border-[#2A2A2A] px-4 text-sm font-black text-[#A996FF] transition-colors hover:border-[#6C5CFF]/70 hover:text-white"
         >
           More

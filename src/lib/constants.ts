@@ -20,3 +20,12 @@ export const DEFAULT_GAME_WIDTH = 960;
 export const DEFAULT_GAME_HEIGHT = 640;
 export const MAX_UPLOAD_SIZE_MB = 50;
 export const MAX_AVATAR_SIZE_MB = 2;
+
+export function archiveSort(value?: string | null): SortOption {
+  return SORT_OPTIONS.find((option) => option.value === value)?.value ?? 'alpha';
+}
+
+export function archiveHref(page: number, sort: SortOption) {
+  const path = page === 1 ? '/games' : `/games/page/${page}`;
+  return sort === 'alpha' ? path : `${path}?sort=${sort}`;
+}
