@@ -51,6 +51,7 @@ export default function Navbar({
           <Link href="/" className="relative h-10 w-[135px] shrink-0 sm:w-[155px]" aria-label="YoPlayables home">
             <Image
               src="/yoplayables-logo.png"
+              loading="eager"
               alt="YoPlayables"
               fill
               className="object-contain object-left"

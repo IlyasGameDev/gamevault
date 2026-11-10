@@ -20,6 +20,11 @@ import { getGameSeo } from '@/lib/seo';
 
 export const revalidate = 3600;
 
+// Generate published game pages on demand. Catalog and rating writes invalidate the affected slug.
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
+  return [];
+}
+
 async function getGame(slug: string): Promise<GameWithCategories | null> {
   const { data, error } = await supabaseAdmin
     .from('games')
