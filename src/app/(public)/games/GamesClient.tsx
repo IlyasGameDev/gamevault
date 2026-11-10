@@ -43,7 +43,9 @@ function BrowseContent({
   const [total, setTotal] = useState(initialTotal);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef(1);
-  const fetchingRef = useRef(false);
+  const activeRequest = useRef<AbortController | null>(null);
+  const [failedPage, setFailedPage] = useState<number | null>(null);
+  useEffect(() => () => activeRequest.current?.abort(), []);
   const lastQueryKeyRef = useRef(initialQueryKey);
 
   // Sync search input → URL
@@ -57,15 +59,22 @@ function BrowseContent({
   }, [debouncedSearch, pathname, q, router, searchParams]);
 
   const fetchPage = useCallback(async (nextPage: number, append = false) => {
-    if (fetchingRef.current) return;
-    fetchingRef.current = true;
+    if (append && activeRequest.current) return;
+    activeRequest.current?.abort();
+    const request = new AbortController();
+    activeRequest.current = request;
+    setFailedPage(null);
     if (append) setLoadingMore(true);
     else setLoading(true);
     const params = new URLSearchParams({ page: String(nextPage), sort });
     if (q) params.set('q', q);
     if (category) params.set('category', category);
     try {
-      const { data, count } = await fetch(`/api/games?${params}`).then((r) => r.json());
+      const response = await fetch(`/api/games?${params}`, { signal: request.signal });
+      if (!response.ok) throw new Error('Game list unavailable');
+      const { data, count } = await response.json();
+      if (request.signal.aborted) return;
+      pageRef.current = nextPage;
       setGames((current) => {
         const nextGames = data ?? [];
         if (!append) return nextGames;
@@ -74,10 +83,14 @@ function BrowseContent({
       });
       setTotal(count ?? 0);
       setHasMore((count ?? 0) > nextPage * GAMES_PER_PAGE);
+    } catch {
+      if (!request.signal.aborted) setFailedPage(nextPage);
     } finally {
-      setLoading(false);
-      setLoadingMore(false);
-      fetchingRef.current = false;
+      if (activeRequest.current === request) {
+        activeRequest.current = null;
+        setLoading(false);
+        setLoadingMore(false);
+      }
     }
   }, [category, q, sort]);
 
@@ -95,13 +108,12 @@ function BrowseContent({
 
   // Infinite scroll — load next page when sentinel is visible
   useEffect(() => {
-    if (!hasMore || loading || loadingMore) return;
+    if (!hasMore || loading || loadingMore || failedPage !== null) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (!entries[0].isIntersecting) return;
         const next = pageRef.current + 1;
-        pageRef.current = next;
         fetchPage(next, true);
       },
       { rootMargin: '400px' }
@@ -109,7 +121,7 @@ function BrowseContent({
 
     if (sentinelRef.current) observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [fetchPage, hasMore, loading, loadingMore]);
+  }, [fetchPage, hasMore, loading, loadingMore, failedPage]);
 
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -160,6 +172,11 @@ function BrowseContent({
       <GameGrid games={games} loading={loading} />
       {!q && !category && total > GAMES_PER_PAGE && <ArchiveLinks total={total} sort={sort} />}
 
+      {failedPage !== null && (
+        <button type="button" className="rounded-full border border-[#6C5CFF] px-4 py-2 text-white" onClick={() => fetchPage(failedPage, failedPage > 1)}>
+          Retry loading games
+        </button>
+      )}
       {loadingMore && (
         <div className="flex justify-center py-6">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#6C5CFF] border-t-transparent" />
