@@ -7,7 +7,7 @@ import MicrosoftClarity from '@/components/analytics/MicrosoftClarity';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from '@/lib/constants';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter', preload: false });
 const ADSENSE_CLIENT = 'ca-pub-5768446673898014';
 const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin

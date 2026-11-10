@@ -68,7 +68,17 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|ads.txt|api).*)',
+    // Anonymous canonical pages can be served directly by the CDN. Keep session
+    // refresh for requests with cookies and canonicalization on deployment aliases.
+    {
+      source: '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|ads.txt|api).*)',
+      has: [{ type: 'header', key: 'cookie' }],
+    },
+    {
+      source: '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|ads.txt|api).*)',
+      has: [{ type: 'host', value: '(?:.+\\.vercel\\.app|yoplayables\\.com)' }],
+    },
+    '/:key([A-Za-z0-9-]+).txt',
     '/admin/:path*',
     '/profile/:path*',
   ],
