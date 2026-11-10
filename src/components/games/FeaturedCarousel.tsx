@@ -55,10 +55,11 @@ function GameTile({
           fill
           preload={priority}
           fetchPriority={priority ? 'high' : undefined}
+          decoding={priority ? 'sync' : 'async'}
           quality={65}
           unoptimized={!canOptimizeGameImage(imageSrc)}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
-          sizes={isLarge ? '(max-width: 1024px) 100vw, 60vw' : '(max-width: 1024px) 50vw, 20vw'}
+          sizes={isLarge ? '(min-width: 1280px) 720px, (min-width: 1024px) 57vw, calc(100vw - 32px)' : '(min-width: 1280px) 250px, (min-width: 1024px) 20vw, calc(50vw - 22px)'}
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center bg-[#202020]">
