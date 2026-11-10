@@ -4,7 +4,6 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import ToastProvider from '@/components/ui/Toast';
 
 const NavbarAuthMenu = dynamic(() => import('@/components/layout/NavbarAuthMenu'), {
   ssr: false,
@@ -40,12 +39,7 @@ export default function DeferredNavbarAuthMenu({
     return placement === 'desktop' ? <DesktopFallback /> : <MobileFallback onNavigate={onNavigate} />;
   }
 
-  return (
-    <>
-      <ToastProvider />
-      <NavbarAuthMenu placement={placement} onNavigate={onNavigate} />
-    </>
-  );
+  return <NavbarAuthMenu placement={placement} onNavigate={onNavigate} />;
 }
 
 function DesktopFallback() {
