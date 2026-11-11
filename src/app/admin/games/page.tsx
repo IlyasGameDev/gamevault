@@ -6,7 +6,7 @@ import { Plus, Edit2, Trash2, Search, CheckSquare, Square, ChevronLeft, ChevronR
 import { Game } from '@/lib/types/database';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
-import { formatDate, formatNumber } from '@/lib/utils';
+import { formatDate, formatCount } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
 const ADMIN_LIMIT = 100;
@@ -240,7 +240,7 @@ export default function AdminGamesPage() {
                   <th className="px-4 py-4 text-gray-500 font-medium">Type</th>
                   <th className="px-4 py-4 text-gray-500 font-medium">Status</th>
                   <th className="px-4 py-4 text-gray-500 font-medium">Hero</th>
-                  <th className="px-4 py-4 text-gray-500 font-medium">Plays</th>
+                  <th className="px-4 py-4 text-gray-500 font-medium">Game loads</th>
                   <th className="px-4 py-4 text-gray-500 font-medium">Created</th>
                   <th className="px-4 py-4" />
                 </tr>
@@ -286,7 +286,7 @@ export default function AdminGamesPage() {
                         {game.is_featured ? 'Hero' : 'Add'}
                       </button>
                     </td>
-                    <td className="px-4 py-4 text-gray-400">{formatNumber(game.play_count)}</td>
+                    <td className="px-4 py-4 text-gray-400">{formatCount(game.play_count)}</td>
                     <td className="px-4 py-4 text-gray-600">{formatDate(game.created_at)}</td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-1">

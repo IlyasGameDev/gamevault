@@ -3,50 +3,26 @@ import StatsCards from '@/components/admin/StatsCards';
 import RecentGamesTable from '@/components/admin/RecentGamesTable';
 import Link from 'next/link';
 import { Plus, ExternalLink } from 'lucide-react';
-import { AdminStats, Game } from '@/lib/types/database';
+import type { Game } from '@/lib/types/database';
+import { getAdminStats } from '@/lib/adminStats';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 
 export const dynamic = 'force-dynamic';
 
-async function getStats(): Promise<AdminStats> {
-  const [publishedRes, draftRes, archivedRes, usersRes, playsRes, commentsRes, flaggedRes] =
-    await Promise.all([
-      supabaseAdmin.from('games').select('*', { count: 'exact', head: true }).eq('status', 'published'),
-      supabaseAdmin.from('games').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
-      supabaseAdmin.from('games').select('*', { count: 'exact', head: true }).eq('status', 'archived'),
-      supabaseAdmin.from('profiles').select('*', { count: 'exact', head: true }),
-      supabaseAdmin.from('play_history').select('*', { count: 'exact', head: true }),
-      supabaseAdmin.from('comments').select('*', { count: 'exact', head: true }),
-      supabaseAdmin.from('comments').select('*', { count: 'exact', head: true }).eq('is_flagged', true),
-    ]);
-
-  const published = publishedRes.count ?? 0;
-  const draft = draftRes.count ?? 0;
-  const archived = archivedRes.count ?? 0;
-
-  return {
-    total_games: published + draft + archived,
-    published_games: published,
-    draft_games: draft,
-    archived_games: archived,
-    total_users: usersRes.count ?? 0,
-    total_plays: playsRes.count ?? 0,
-    total_comments: commentsRes.count ?? 0,
-    flagged_comments: flaggedRes.count ?? 0,
-  };
-}
-
 async function getRecentGames(): Promise<Game[]> {
-  const { data } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
     .from('games')
     .select('*')
     .order('created_at', { ascending: false })
     .limit(10);
-  return data ?? [];
+  if (error) throw error;
+  return data;
 }
 
 export default async function AdminDashboard() {
-  const [stats, recentGames] = await Promise.all([getStats(), getRecentGames()]);
+  const [stats, recentGames] = await Promise.allSettled([getAdminStats(), getRecentGames()]);
+  if (stats.status === 'rejected') console.error('Dashboard stats unavailable:', stats.reason);
+  if (recentGames.status === 'rejected') console.error('Recent games unavailable:', recentGames.reason);
 
   return (
     <div className="p-8 space-y-8">
@@ -67,7 +43,11 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      <StatsCards stats={stats} />
+      {stats.status === 'fulfilled' ? (
+        <StatsCards stats={stats.value} />
+      ) : (
+        <p role="alert" className="text-sm text-amber-400">Dashboard totals are unavailable. Refresh to try again.</p>
+      )}
 
       <Card>
         <CardHeader>
@@ -77,7 +57,11 @@ export default async function AdminDashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          <RecentGamesTable games={recentGames} />
+          {recentGames.status === 'fulfilled' ? (
+            <RecentGamesTable games={recentGames.value} />
+          ) : (
+            <p role="alert" className="text-sm text-amber-400">Recent games are unavailable. Refresh to try again.</p>
+          )}
         </CardContent>
       </Card>
     </div>
