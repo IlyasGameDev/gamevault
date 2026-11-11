@@ -1,10 +1,12 @@
 import { SITE_URL } from '@/lib/constants';
+import { isPreviewDeployment } from '@/lib/siteUrl';
 
 const INDEXNOW_ENDPOINT = 'https://api.indexnow.org/indexnow';
 const INDEXNOW_KEY_PATTERN = /^[A-Za-z0-9-]{8,128}$/;
 const REQUEST_TIMEOUT_MS = 4000;
 
 export function getIndexNowKey() {
+  if (isPreviewDeployment) return null;
   const key = process.env.INDEXNOW_KEY?.trim();
   return key && INDEXNOW_KEY_PATTERN.test(key) ? key : null;
 }

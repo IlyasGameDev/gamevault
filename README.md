@@ -31,6 +31,12 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+GameVault's Vercel **Preview** environment uses the separate **GameVault Preview** Supabase project. Set the following variables for Preview, with no branch filter:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Variable | Value from the preview project |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Project URL |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Publishable API key |
+| `SUPABASE_SECRET_KEY` | Server API key; store it as a Vercel Secret |
+
+Keep Vercel's system environment variables enabled so previews can use their own deployment origin. After changing an environment variable, build a new preview. Check `/api/games?limit=1` for the preview catalog and `/robots.txt` for `Disallow: /`. Production keeps its own Supabase settings; the legacy anon and service-role variable names remain supported.
