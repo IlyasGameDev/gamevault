@@ -1,6 +1,6 @@
 import { Gamepad2, Users, Play, MessageSquare, AlertTriangle } from 'lucide-react';
-import { AdminStats } from '@/lib/types/database';
-import { formatNumber } from '@/lib/utils';
+import type { AdminStats } from '@/lib/types/database';
+import { formatCount } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/Card';
 
 interface StatsCardsProps {
@@ -12,7 +12,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     {
       label: 'Total Games',
       value: stats.total_games,
-      sub: `${stats.published_games} published · ${stats.draft_games} draft`,
+      sub: `${formatCount(stats.published_games)} published · ${formatCount(stats.draft_games)} draft · ${formatCount(stats.archived_games)} archived`,
       icon: Gamepad2,
       color: 'text-indigo-400',
       bg: 'bg-indigo-500/10',
@@ -25,8 +25,9 @@ export default function StatsCards({ stats }: StatsCardsProps) {
       bg: 'bg-emerald-500/10',
     },
     {
-      label: 'Total Plays',
-      value: stats.total_plays,
+      label: 'Game loads',
+      value: stats.total_game_loads,
+      sub: `${formatCount(stats.signed_in_loads)} signed-in ${stats.signed_in_loads === 1 ? 'load' : 'loads'}`,
       icon: Play,
       color: 'text-blue-400',
       bg: 'bg-blue-500/10',
@@ -34,7 +35,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     {
       label: 'Comments',
       value: stats.total_comments,
-      sub: stats.flagged_comments > 0 ? `${stats.flagged_comments} flagged` : undefined,
+      sub: stats.flagged_comments > 0 ? `${formatCount(stats.flagged_comments)} flagged` : undefined,
       icon: stats.flagged_comments > 0 ? AlertTriangle : MessageSquare,
       color: stats.flagged_comments > 0 ? 'text-yellow-400' : 'text-purple-400',
       bg: stats.flagged_comments > 0 ? 'bg-yellow-500/10' : 'bg-purple-500/10',
@@ -50,7 +51,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
               <card.icon size={22} className={card.color} />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{formatNumber(card.value)}</p>
+              <p className="text-2xl font-bold text-white">{formatCount(card.value)}</p>
               <p className="text-xs text-gray-500">{card.label}</p>
               {card.sub && <p className="text-xs text-gray-600 mt-0.5">{card.sub}</p>}
             </div>

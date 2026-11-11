@@ -138,7 +138,8 @@ export interface AdminStats {
   draft_games: number;
   archived_games: number;
   total_users: number;
-  total_plays: number;
+  total_game_loads: number;
+  signed_in_loads: number;
   total_comments: number;
   flagged_comments: number;
 }

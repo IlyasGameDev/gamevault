@@ -40,3 +40,7 @@ GameVault's Vercel **Preview** environment uses the separate **GameVault Preview
 | `SUPABASE_SECRET_KEY` | Server API key; store it as a Vercel Secret |
 
 Keep Vercel's system environment variables enabled so previews can use their own deployment origin. After changing an environment variable, build a new preview. Check `/api/games?limit=1` for the preview catalog and `/robots.txt` for `Disallow: /`. Production keeps its own Supabase settings; the legacy anon and service-role variable names remain supported.
+
+For an existing database, apply [the admin stats migration](supabase/migrations/202611110001_admin_dashboard_stats.sql) to the corresponding Supabase project before deploying the dashboard update. New databases created from `supabase/schema.sql` already include it.
+
+The admin dashboard and `GET /api/admin/stats` use the same totals. `total_game_loads` sums recorded iframe loads across the current catalog; `signed_in_loads` counts signed-in history entries. The legacy API field `total_plays` now aliases `total_game_loads`. These metrics do not measure gameplay duration or publisher credit.

@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { Edit2 } from 'lucide-react';
 import { Game } from '@/lib/types/database';
 import Badge from '@/components/ui/Badge';
-import { formatDate, formatNumber } from '@/lib/utils';
+import { formatDate, formatCount } from '@/lib/utils';
 
 interface RecentGamesTableProps {
   games: Game[];
@@ -24,7 +24,7 @@ export default function RecentGamesTable({ games }: RecentGamesTableProps) {
             <th className="pb-3 text-gray-500 font-medium">Game</th>
             <th className="pb-3 text-gray-500 font-medium">Type</th>
             <th className="pb-3 text-gray-500 font-medium">Status</th>
-            <th className="pb-3 text-gray-500 font-medium">Plays</th>
+            <th className="pb-3 text-gray-500 font-medium">Game loads</th>
             <th className="pb-3 text-gray-500 font-medium">Rating</th>
             <th className="pb-3 text-gray-500 font-medium">Created</th>
             <th className="pb-3" />
@@ -49,7 +49,7 @@ export default function RecentGamesTable({ games }: RecentGamesTableProps) {
               <td className="py-3 pr-4">
                 <Badge variant={statusVariant[game.status] ?? 'default'}>{game.status}</Badge>
               </td>
-              <td className="py-3 pr-4 text-gray-400">{formatNumber(game.play_count)}</td>
+              <td className="py-3 pr-4 text-gray-400">{formatCount(game.play_count)}</td>
               <td className="py-3 pr-4 text-gray-400">
                 {game.rating_count > 0 ? `${game.rating_avg.toFixed(1)} ★` : '—'}
               </td>
