@@ -1,7 +1,11 @@
 const FALLBACK_SITE_URL = 'http://localhost:3000';
 const PRODUCTION_SITE_URL = 'https://www.yoplayables.com';
+export const isPreviewDeployment =
+  (process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.VERCEL_ENV) === 'preview';
 
 export function getConfiguredSiteUrl() {
+  const deploymentHost = process.env.NEXT_PUBLIC_VERCEL_URL || process.env.VERCEL_URL;
+  if (isPreviewDeployment && deploymentHost) return `https://${deploymentHost}`;
   const siteUrl = stripTrailingSlash(process.env.NEXT_PUBLIC_SITE_URL || FALLBACK_SITE_URL);
   return isVercelPreviewUrl(siteUrl) ? PRODUCTION_SITE_URL : siteUrl;
 }
@@ -15,7 +19,7 @@ export function getAuthRedirectBase(requestUrl: string) {
   const requestOrigin = getRequestOrigin(requestUrl);
 
   if (isVercelPreviewUrl(requestOrigin)) {
-    return PRODUCTION_SITE_URL;
+    return isPreviewDeployment ? requestOrigin : PRODUCTION_SITE_URL;
   }
 
   return isLocalUrl(configuredSiteUrl) ? requestOrigin : configuredSiteUrl;
@@ -28,7 +32,7 @@ export function isCanonicalHost(host: string) {
 
 export function shouldRedirectToCanonicalHost(host: string) {
   const bareHost = new URL(PRODUCTION_SITE_URL).hostname.replace(/^www\./, '');
-  return normalizeHost(host) === bareHost || (isVercelHost(host) && !isCanonicalHost(host));
+  return normalizeHost(host) === bareHost || (!isPreviewDeployment && isVercelHost(host));
 }
 
 export function getProductionSiteUrl() {

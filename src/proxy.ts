@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { getIndexNowKey, getIndexNowKeyPath } from '@/lib/indexNow';
 import { getProductionSiteUrl, shouldRedirectToCanonicalHost } from '@/lib/siteUrl';
+import { supabasePublishableKey } from '@/lib/supabase/publishableKey';
 
 export async function proxy(request: NextRequest) {
   const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? '';
@@ -25,7 +26,7 @@ export async function proxy(request: NextRequest) {
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabasePublishableKey!,
     {
       cookies: {
         getAll() {

@@ -1,20 +1,19 @@
 import { NextResponse } from 'next/server';
+import { supabasePublishableKey } from '@/lib/supabase/publishableKey';
 import { DEFAULT_OAUTH_PROVIDERS, type OAuthProviderAvailability } from '@/lib/authProviders';
 
 export async function GET() {
   const settingsUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/settings`
     : null;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!settingsUrl || !anonKey) {
+  if (!settingsUrl || !supabasePublishableKey) {
     return NextResponse.json(DEFAULT_OAUTH_PROVIDERS);
   }
 
   try {
     const response = await fetch(settingsUrl, {
       headers: {
-        apikey: anonKey,
+        apikey: supabasePublishableKey,
       },
       next: { revalidate: 300 },
     });
